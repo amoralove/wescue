@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import {
   buildMessages,
@@ -10,7 +9,8 @@ import { matchDogs } from "@/lib/matching";
 import { createClient } from "@/lib/supabase/server";
 import type { ChatMessage, Dog } from "@/types";
 
-const anthropic = new Anthropic();
+const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://localhost:11434";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "llama3.2";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,16 +25,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system: getSystemPrompt(),
-      messages: buildMessages(messages),
+    const ollamaRes = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        stream: false,
+        messages: [
+          { role: "system", content: getSystemPrompt() },
+          ...buildMessages(messages),
+        ],
+      }),
     });
 
-    const contentBlock = response.content[0];
-    const assistantText =
-      contentBlock.type === "text" ? contentBlock.text : "";
+    if (!ollamaRes.ok) {
+      const text = await ollamaRes.text();
+      throw new Error(`Ollama error ${ollamaRes.status}: ${text}`);
+    }
+
+    const data = await ollamaRes.json();
+    const assistantText: string = data.message?.content ?? "";
 
     const preferences = extractPreferences(assistantText);
     const visibleText = stripPreferencesTag(assistantText);

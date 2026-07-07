@@ -122,7 +122,7 @@ export default function ProfilePage() {
             home_photos: profile.home_photos?.length
               ? profile.home_photos
               : HOME_PHOTO_SLOTS.map((s) => ({ url: "", label: s.label })),
-            references: profile.references ?? [{ ...EMPTY_REF }, { ...EMPTY_REF }],
+            references: profile.personal_references ?? [{ ...EMPTY_REF }, { ...EMPTY_REF }],
           }));
         }
       })
@@ -236,7 +236,7 @@ export default function ProfilePage() {
           background_check_consent: form.background_check_consent,
           id_photo_url: form.id_photo_url,
           home_photos: form.home_photos,
-          references: form.references,
+          personal_references: form.references,
         }),
       });
 

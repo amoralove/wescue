@@ -25,7 +25,15 @@ function formatAge(years: number | null, months: number | null): string {
   return "Unknown";
 }
 
-export function DogCard({ dog, index = 0 }: { dog: Dog; index?: number }) {
+export function DogCard({
+  dog,
+  index = 0,
+  headerAction,
+}: {
+  dog: Dog;
+  index?: number;
+  headerAction?: React.ReactNode;
+}) {
   const wobbly = WOBBLY_VARIANTS[index % WOBBLY_VARIANTS.length];
   const rotation = ROTATIONS[index % ROTATIONS.length];
   const bgColor = BG_COLORS[index % BG_COLORS.length];
@@ -35,79 +43,85 @@ export function DogCard({ dog, index = 0 }: { dog: Dog; index?: number }) {
   const photoUrl = dog.photos?.[0];
 
   return (
-    <Link href={`/dogs/${dog.id}`}>
-      <div className="relative pt-3">
-        {/* tape across top of card */}
-        <div
-          className={`${tapeClass} absolute top-0 left-1/2 -translate-x-1/2 w-[90px] z-10`}
-          style={{ transform: `translateX(-50%) rotate(${tapeRotation})` }}
-        />
+    <div className="relative pt-3">
+      {/* tape — outside the link so it doesn't interfere */}
       <div
-        className="card-sketchy overflow-hidden cursor-pointer hover:rotate-[-1deg]"
+        className={`${tapeClass} absolute top-0 left-1/2 -translate-x-1/2 w-[90px] z-10`}
+        style={{ transform: `translateX(-50%) rotate(${tapeRotation})` }}
+      />
+
+      <div
+        className="card-sketchy overflow-hidden relative hover:rotate-[-1deg]"
         style={{ borderRadius: wobbly, transform: `rotate(${rotation})` }}
       >
-        <div
-          className="h-[180px] flex items-center justify-center relative border-b-3 border-pencil"
-          style={{ backgroundColor: bgColor }}
-        >
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt={dog.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-[5rem]">&#x1f436;</span>
-          )}
+        {/* Heart button sits above the link, not inside it */}
+        {headerAction && (
+          <div className="absolute top-2 right-2 z-20">{headerAction}</div>
+        )}
 
-          {dog.good_with_kids && (
-            <span
-              className="absolute top-2.5 left-2.5 bg-forest text-white font-heading text-xs font-bold px-3 py-1 border-2 border-pencil shadow-[2px_2px_0px_0px_#2d2d2d]"
-              style={{ borderRadius: wobbly }}
-            >
-              Great with kids
-            </span>
-          )}
-        </div>
+        <Link href={`/dogs/${dog.id}`} className="block cursor-pointer">
+          <div
+            className="h-[180px] flex items-center justify-center relative border-b-3 border-pencil"
+            style={{ backgroundColor: bgColor }}
+          >
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={dog.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-[5rem]">&#x1f436;</span>
+            )}
 
-        <div className="p-4">
-          <h3 className="font-heading text-2xl font-bold">{dog.name}</h3>
-          <p className="text-sm opacity-60 mb-2">
-            {dog.breed_primary ?? "Mixed"} &middot;{" "}
-            {formatAge(dog.age_years, dog.age_months)} &middot;{" "}
-            {dog.size?.charAt(0).toUpperCase() + dog.size?.slice(1)}
-          </p>
-
-          {dog.personality && (
-            <p className="text-base leading-snug opacity-80 mb-3 line-clamp-2">
-              {dog.personality}
-            </p>
-          )}
-
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            <span className="px-2.5 py-0.5 border-2 border-erased text-xs bg-paper wobbly-1">
-              {dog.energy_level?.charAt(0).toUpperCase() +
-                dog.energy_level?.slice(1)}{" "}
-              Energy
-            </span>
-            {dog.house_trained && (
-              <span className="px-2.5 py-0.5 border-2 border-erased text-xs bg-paper wobbly-2">
-                House Trained
+            {dog.good_with_kids && (
+              <span
+                className="absolute top-2.5 left-2.5 bg-forest text-white font-heading text-xs font-bold px-3 py-1 border-2 border-pencil shadow-[2px_2px_0px_0px_#2d2d2d]"
+                style={{ borderRadius: wobbly }}
+              >
+                Great with kids
               </span>
             )}
           </div>
 
-          <div className="flex justify-between items-center pt-3 border-t-2 border-dashed border-erased">
-            <span className="text-sm opacity-50">
-              {dog.shelter?.name ?? "Local Shelter"}
-            </span>
-            <span className="font-heading font-bold text-lg text-forest">
-              {formatFee(dog.adoption_fee_cents)}
-            </span>
+          <div className="p-4">
+            <h3 className="font-heading text-2xl font-bold">{dog.name}</h3>
+            <p className="text-sm opacity-60 mb-2">
+              {dog.breed_primary ?? "Mixed"} &middot;{" "}
+              {formatAge(dog.age_years, dog.age_months)} &middot;{" "}
+              {dog.size?.charAt(0).toUpperCase() + dog.size?.slice(1)}
+            </p>
+
+            {dog.personality && (
+              <p className="text-base leading-snug opacity-80 mb-3 line-clamp-2">
+                {dog.personality}
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              <span className="px-2.5 py-0.5 border-2 border-erased text-xs bg-paper wobbly-1">
+                {dog.energy_level?.charAt(0).toUpperCase() +
+                  dog.energy_level?.slice(1)}{" "}
+                Energy
+              </span>
+              {dog.house_trained && (
+                <span className="px-2.5 py-0.5 border-2 border-erased text-xs bg-paper wobbly-2">
+                  House Trained
+                </span>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t-2 border-dashed border-erased">
+              <span className="text-sm opacity-50">
+                {dog.shelter?.name ?? "Local Shelter"}
+              </span>
+              <span className="font-heading font-bold text-lg text-forest">
+                {formatFee(dog.adoption_fee_cents)}
+              </span>
+            </div>
           </div>
-        </div>
+        </Link>
       </div>
-      </div>
-    </Link>
+    </div>
   );
 }

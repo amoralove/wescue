@@ -59,15 +59,18 @@ export default async function DashboardPage() {
             </Link>
 
             {/* Favorites */}
-            <div className="card-sketchy p-6 wobbly-3 opacity-60">
+            <Link
+              href="/dashboard/favorites"
+              className="card-sketchy p-6 hover:shadow-hard-lg transition-shadow wobbly-3 group"
+            >
               <span className="text-4xl block mb-3">&#x2764;</span>
-              <h2 className="font-heading text-xl font-bold mb-1">
+              <h2 className="font-heading text-xl font-bold mb-1 group-hover:text-forest">
                 Saved Dogs
               </h2>
               <p className="text-sm opacity-60">
-                Your favorited dogs will appear here. Coming soon!
+                Dogs you&apos;ve hearted — ready when you are.
               </p>
-            </div>
+            </Link>
 
             {/* Applications */}
             <Link
@@ -95,15 +98,18 @@ export default async function DashboardPage() {
             </div>
 
             {/* Profile */}
-            <div className="card-sketchy p-6 wobbly-2 opacity-60">
+            <Link
+              href="/dashboard/profile"
+              className="card-sketchy p-6 hover:shadow-hard-lg transition-shadow wobbly-2 group"
+            >
               <span className="text-4xl block mb-3">&#x1f464;</span>
-              <h2 className="font-heading text-xl font-bold mb-1">
+              <h2 className="font-heading text-xl font-bold mb-1 group-hover:text-forest">
                 Your Profile
               </h2>
               <p className="text-sm opacity-60">
-                Complete your adopter profile for faster applications. Coming soon!
+                ID, home photos, references — make applications faster.
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Account Info */}

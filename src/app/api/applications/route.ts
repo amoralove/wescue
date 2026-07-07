@@ -54,16 +54,18 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-      throw error;
+      console.error("Insert error:", error);
+      return NextResponse.json(
+        { error: error.message ?? "Database error" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ application: data }, { status: 201 });
-  } catch (error) {
-    console.error("Application submit error:", error);
-    return NextResponse.json(
-      { error: "Failed to submit application" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Application submit error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

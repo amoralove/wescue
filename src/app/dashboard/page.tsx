@@ -70,15 +70,18 @@ export default async function DashboardPage() {
             </div>
 
             {/* Applications */}
-            <div className="card-sketchy p-6 wobbly-4 opacity-60">
+            <Link
+              href="/dashboard/applications"
+              className="card-sketchy p-6 hover:shadow-hard-lg transition-shadow wobbly-4 group"
+            >
               <span className="text-4xl block mb-3">&#x1f4cb;</span>
-              <h2 className="font-heading text-xl font-bold mb-1">
+              <h2 className="font-heading text-xl font-bold mb-1 group-hover:text-forest">
                 Applications
               </h2>
               <p className="text-sm opacity-60">
-                Track your adoption applications. Coming soon!
+                Track your adoption applications and shelter responses.
               </p>
-            </div>
+            </Link>
 
             {/* Messages */}
             <div className="card-sketchy p-6 wobbly-1 opacity-60">

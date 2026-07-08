@@ -33,7 +33,12 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center relative">
+          <div className="flex items-center justify-center relative pt-4">
+            {/* tape across top of hero card */}
+            <div
+              className="tape tape-sage absolute w-[120px] z-10"
+              style={{ top: "-2px", left: "50%", transform: "translateX(-50%) rotate(-2deg)" }}
+            />
             <div
               className="bg-paper-alt border-3 border-pencil shadow-[8px_8px_0px_0px_#2d2d2d] p-10 text-center rotate-2"
               style={{

@@ -1,0 +1,1191 @@
+<title>Wescue — Systems Development Life Cycle</title>
+<style>
+/* ── Tokens ── */
+:root {
+  --bg: #F7F1DE;
+  --surface: #EDE7CC;
+  --surface-2: #E4DCC0;
+  --ink: #4E220F;
+  --ink-2: #7A4E28;
+  --ink-3: #A8845A;
+  --ink-muted: #C4A882;
+  --accent: #9D6638;
+  --rule: #DDD8C4;
+  --tag-bg: #E4DCC0;
+  --p1: #C4864A;
+  --p2: #5A7A5A;
+  --p3: #9D6638;
+  --p4: #3A2010;
+  --good: #4A7A4A;
+  --warn: #A07A28;
+  --sidebar-w: 210px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1A0F06;
+    --surface: #251508;
+    --surface-2: #301A0A;
+    --ink: #F0E4D0;
+    --ink-2: #C4966A;
+    --ink-3: #8A6A4A;
+    --ink-muted: #6A4A28;
+    --accent: #C4864A;
+    --rule: #3A2A1A;
+    --tag-bg: #2C1A0A;
+    --p1: #D49A60;
+    --p2: #7AAA7A;
+    --p3: #C4864A;
+    --p4: #C4A882;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1A0F06; --surface: #251508; --surface-2: #301A0A;
+  --ink: #F0E4D0; --ink-2: #C4966A; --ink-3: #8A6A4A; --ink-muted: #6A4A28;
+  --accent: #C4864A; --rule: #3A2A1A; --tag-bg: #2C1A0A;
+  --p1: #D49A60; --p2: #7AAA7A; --p3: #C4864A; --p4: #C4A882;
+}
+:root[data-theme="light"] {
+  --bg: #F7F1DE; --surface: #EDE7CC; --surface-2: #E4DCC0;
+  --ink: #4E220F; --ink-2: #7A4E28; --ink-3: #A8845A; --ink-muted: #C4A882;
+  --accent: #9D6638; --rule: #DDD8C4; --tag-bg: #E4DCC0;
+  --p1: #C4864A; --p2: #5A7A5A; --p3: #9D6638; --p4: #3A2010;
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ── Doc Header ── */
+.doc-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0 24px;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid var(--ink-2);
+}
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  font-size: 18px;
+  background: var(--accent);
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px; font-weight: bold; letter-spacing: 0.02em;
+  color: var(--bg);
+}
+.doc-meta { text-align: right; }
+.doc-meta-title {
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-muted); display: block;
+}
+.doc-meta-version { font-size: 11px; color: var(--ink-3); }
+
+/* ── Layout ── */
+.doc-layout { display: flex; min-height: calc(100vh - 52px); }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--rule);
+  padding: 24px 0 40px;
+}
+.sidebar-label {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-muted); padding: 0 20px 10px;
+}
+.toc { list-style: none; }
+.toc-phase > a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 20px;
+  font-size: 13px; font-weight: 600;
+  color: var(--ink); border-left: 3px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.toc-phase > a:hover { background: var(--surface-2); text-decoration: none; }
+.toc-phase.p1 > a:hover, .toc-phase.p1 > a.active { border-left-color: var(--p1); }
+.toc-phase.p2 > a:hover, .toc-phase.p2 > a.active { border-left-color: var(--p2); }
+.toc-phase.p3 > a:hover, .toc-phase.p3 > a.active { border-left-color: var(--p3); }
+.toc-phase.p4 > a:hover, .toc-phase.p4 > a.active { border-left-color: var(--p4); }
+.toc-phase .phase-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  width: 20px; height: 20px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); color: var(--ink-3); flex-shrink: 0;
+}
+.toc-phase.p1 .phase-num { background: var(--p1); color: white; }
+.toc-phase.p2 .phase-num { background: var(--p2); color: white; }
+.toc-phase.p3 .phase-num { background: var(--p3); color: white; }
+.toc-phase.p4 .phase-num { background: var(--p4); color: var(--bg); }
+.toc-sub { list-style: none; margin: 0 0 6px; }
+.toc-sub li a {
+  display: block; padding: 4px 20px 4px 44px;
+  font-size: 12px; color: var(--ink-3);
+  transition: color 0.15s;
+}
+.toc-sub li a:hover { color: var(--ink); text-decoration: none; }
+
+/* ── Main Content ── */
+.doc-main { flex: 1; min-width: 0; }
+.doc-intro {
+  max-width: 720px; padding: 40px 48px;
+  border-bottom: 1px solid var(--rule);
+}
+.doc-intro h1 {
+  font-family: Georgia, serif;
+  font-size: 2rem; font-weight: normal;
+  line-height: 1.25; color: var(--ink);
+  margin-bottom: 12px;
+}
+.doc-intro .subtitle { font-size: 15px; color: var(--ink-2); max-width: 52ch; }
+.doc-intro .meta-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.chip {
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 4px;
+  background: var(--tag-bg); color: var(--ink-2);
+  border: 1px solid var(--rule);
+}
+
+/* ── Phase Sections ── */
+.phase-section { border-top: 1px solid var(--rule); }
+.phase-header {
+  padding: 40px 48px 28px;
+  position: relative; overflow: hidden;
+}
+.phase-eyebrow {
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 600; margin-bottom: 6px;
+}
+.phase-title {
+  font-family: Georgia, serif;
+  font-size: 2.25rem; font-weight: normal;
+  line-height: 1.15; color: var(--ink); margin-bottom: 8px;
+  text-wrap: balance;
+}
+.phase-desc { font-size: 15px; color: var(--ink-2); max-width: 56ch; }
+.phase-ghost {
+  position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+  font-family: Georgia, serif;
+  font-size: 9rem; font-weight: bold; line-height: 1;
+  pointer-events: none; user-select: none;
+  opacity: 0.06; color: var(--ink);
+}
+
+.phase-body { padding: 0 48px 56px; max-width: 768px; }
+
+/* ── Subsections ── */
+.subsection { margin-bottom: 44px; }
+.subsection-title {
+  font-family: Georgia, serif;
+  font-size: 1.25rem; font-weight: normal;
+  color: var(--ink); margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+.subsection-sub {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin: 20px 0 8px;
+}
+p { margin-bottom: 12px; color: var(--ink-2); max-width: 65ch; }
+p:last-child { margin-bottom: 0; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+thead { background: var(--surface); }
+th {
+  padding: 9px 14px; text-align: left;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-2); font-weight: 600;
+  border-bottom: 2px solid var(--rule);
+}
+td {
+  padding: 9px 14px; border-bottom: 1px solid var(--rule);
+  vertical-align: top; color: var(--ink-2);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface); }
+td strong { color: var(--ink); font-weight: 600; }
+td code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px; background: var(--surface-2);
+  padding: 1px 5px; border-radius: 3px; color: var(--ink);
+}
+.num { font-variant-numeric: tabular-nums; }
+
+/* ── Feasibility Badges ── */
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px;
+}
+.badge-green { background: #D4EDD4; color: #2A5A2A; }
+.badge-amber { background: #FCEBD4; color: #7A4A10; }
+.badge-red { background: #F4D4D4; color: #6A1A1A; }
+
+/* ── Callout / Deliverable ── */
+.deliverable {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 20px; border-radius: 6px;
+  background: var(--surface); border-left: 4px solid var(--accent);
+  margin: 28px 0;
+}
+.deliverable-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.deliverable-label {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 3px;
+}
+.deliverable-value { font-size: 14px; font-weight: 600; color: var(--ink); }
+.deliverable-desc { font-size: 13px; color: var(--ink-3); margin-top: 3px; }
+
+/* ── Phase stripe (left border) ── */
+.stripe-p1 .phase-header { border-left: 4px solid var(--p1); }
+.stripe-p2 .phase-header { border-left: 4px solid var(--p2); }
+.stripe-p3 .phase-header { border-left: 4px solid var(--p3); }
+.stripe-p4 .phase-header { border-left: 4px solid var(--p4); }
+.stripe-p1 .phase-eyebrow { color: var(--p1); }
+.stripe-p2 .phase-eyebrow { color: var(--p2); }
+.stripe-p3 .phase-eyebrow { color: var(--p3); }
+.stripe-p4 .phase-eyebrow { color: var(--p4); }
+
+/* ── Gantt ── */
+.gantt table { width: 100%; }
+.gantt td, .gantt th { padding: 6px 10px; font-size: 12px; }
+.gantt .cell-task { min-width: 160px; color: var(--ink); font-weight: 500; }
+.gantt .cell-week { min-width: 34px; text-align: center; }
+.gantt .filled { border-radius: 3px; }
+.g-p1 { background: var(--p1); opacity: 0.8; width: 100%; height: 18px; border-radius: 3px; }
+.g-p2 { background: var(--p2); opacity: 0.8; width: 100%; height: 18px; border-radius: 3px; }
+.g-p3 { background: var(--p3); opacity: 0.8; width: 100%; height: 18px; border-radius: 3px; }
+.g-p4 { background: var(--p4); opacity: 0.8; width: 100%; height: 18px; border-radius: 3px; }
+
+/* ── Use Case Grid ── */
+.uc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+.uc-card {
+  padding: 16px; background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 6px; border-top: 3px solid var(--accent);
+}
+.uc-id { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px; }
+.uc-name { font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 8px; }
+.uc-row { font-size: 12.5px; color: var(--ink-2); margin-bottom: 4px; }
+.uc-row span { color: var(--ink-3); font-size: 11px; letter-spacing: 0.05em; }
+
+/* ── ER Diagram ── */
+.er-diagram { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; margin: 16px 0; overflow-x: auto; }
+.er-diagram svg { display: block; min-width: 560px; }
+
+/* ── Architecture boxes ── */
+.arch { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.arch-layer { display: flex; gap: 8px; flex-wrap: wrap; }
+.arch-box {
+  padding: 10px 16px; border-radius: 5px; border: 1px solid var(--rule);
+  background: var(--surface); font-size: 13px;
+}
+.arch-box strong { display: block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+.arch-box em { font-style: normal; color: var(--ink-2); font-size: 12px; }
+.arch-arrow { text-align: center; color: var(--ink-muted); font-size: 18px; margin: 2px 0; }
+.arch-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); padding: 4px 0 2px; }
+
+/* ── Site Map ── */
+.sitemap { margin: 16px 0; font-size: 13px; }
+.sm-root {
+  display: inline-block;
+  padding: 8px 16px; background: var(--ink); color: var(--bg);
+  border-radius: 4px; font-weight: 600; margin-bottom: 20px;
+}
+.sm-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.sm-node {
+  padding: 7px 13px; border: 1.5px solid var(--rule);
+  background: var(--surface); border-radius: 4px;
+  color: var(--ink); font-size: 12.5px;
+}
+.sm-node.protected { border-color: var(--p3); }
+.sm-node.auth { border-color: var(--p2); }
+.sm-children { display: flex; gap: 8px; flex-wrap: wrap; margin-left: 20px; }
+.sm-child {
+  padding: 5px 11px; border: 1px dashed var(--rule);
+  border-radius: 4px; font-size: 12px; color: var(--ink-2);
+}
+.sm-tree { border-left: 2px solid var(--rule); margin-left: 20px; padding-left: 16px; }
+
+/* ── Proto stages ── */
+.proto-stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0; }
+.proto-card {
+  padding: 16px; border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--surface);
+}
+.proto-badge {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 700; color: white; padding: 3px 8px; border-radius: 3px;
+  display: inline-block; margin-bottom: 10px;
+}
+.proto-card h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.proto-card p { font-size: 12.5px; color: var(--ink-2); }
+
+/* ── Test matrix ── */
+.test-pass { color: #2A5A2A; font-weight: 600; }
+.test-planned { color: var(--ink-3); }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .doc-intro, .phase-header, .phase-body { padding-left: 20px; padding-right: 20px; }
+  .phase-ghost { display: none; }
+  .proto-stages { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+</style>
+
+<!-- ── DOC HEADER ── -->
+<header class="doc-header">
+  <div class="header-brand">
+    <div class="brand-mark">🐾</div>
+    <span class="brand-name">Wescue</span>
+  </div>
+  <div class="doc-meta">
+    <span class="doc-meta-title">Systems Development Life Cycle</span>
+    <span class="doc-meta-version">v1.0 · July 2026</span>
+  </div>
+</header>
+
+<!-- ── LAYOUT ── -->
+<div class="doc-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" aria-label="Document navigation">
+    <p class="sidebar-label">Contents</p>
+    <ul class="toc">
+      <li class="toc-phase p1">
+        <a href="#phase-1"><span class="phase-num">01</span> Planning</a>
+        <ul class="toc-sub">
+          <li><a href="#initiation">Project Initiation</a></li>
+          <li><a href="#sys-request">System Request</a></li>
+          <li><a href="#feasibility">Feasibility Analysis</a></li>
+          <li><a href="#project-plan">Project Plan</a></li>
+        </ul>
+      </li>
+      <li class="toc-phase p2">
+        <a href="#phase-2"><span class="phase-num">02</span> Analysis</a>
+        <ul class="toc-sub">
+          <li><a href="#func-req">Functional Req.</a></li>
+          <li><a href="#nonfunc-req">Non-Functional Req.</a></li>
+          <li><a href="#gathering">Req. Gathering</a></li>
+          <li><a href="#use-cases">Use Cases</a></li>
+          <li><a href="#domain-model">Domain Model</a></li>
+        </ul>
+      </li>
+      <li class="toc-phase p3">
+        <a href="#phase-3"><span class="phase-num">03</span> Design</a>
+        <ul class="toc-sub">
+          <li><a href="#strategy">Design Strategy</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#interface">Interface Design</a></li>
+          <li><a href="#database">Database Specs</a></li>
+          <li><a href="#sitemap">Information Arch.</a></li>
+          <li><a href="#prototyping">Prototyping</a></li>
+        </ul>
+      </li>
+      <li class="toc-phase p4">
+        <a href="#phase-4"><span class="phase-num">04</span> Implementation</a>
+        <ul class="toc-sub">
+          <li><a href="#construction">Construction</a></li>
+          <li><a href="#testing">Testing</a></li>
+          <li><a href="#deployment">Deployment</a></li>
+          <li><a href="#training">Training &amp; Support</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="doc-main">
+
+    <!-- INTRO -->
+    <div class="doc-intro">
+      <h1>Systems Development<br>Life Cycle</h1>
+      <p class="subtitle">A four-phase documentation of the planning, analysis, design, and implementation of Wescue — a rescue-only dog adoption platform that matches adopters to shelter dogs using lifestyle data and algorithmic scoring.</p>
+      <div class="meta-chips">
+        <span class="chip">Next.js 15</span>
+        <span class="chip">Supabase</span>
+        <span class="chip">TypeScript</span>
+        <span class="chip">Rescue-Only Platform</span>
+        <span class="chip">July 2026</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- PHASE 1: PLANNING                      -->
+    <!-- ══════════════════════════════════════ -->
+    <section id="phase-1" class="phase-section stripe-p1">
+      <div class="phase-header">
+        <div class="phase-ghost">01</div>
+        <p class="phase-eyebrow">Phase 01 — Planning</p>
+        <h2 class="phase-title">Why should this system be built?</h2>
+        <p class="phase-desc">Define the business case, assess feasibility across four dimensions, and produce a project plan before any development begins.</p>
+      </div>
+      <div class="phase-body">
+
+        <!-- Project Initiation -->
+        <div class="subsection" id="initiation">
+          <h3 class="subsection-title">Project Initiation</h3>
+          <p>Approximately <strong>6.3 million dogs</strong> enter U.S. shelters annually. Nearly 50% wait longer than optimal placement windows, and roughly 20% of adoptions are returned within the first year — the majority citing lifestyle incompatibility as the primary reason. Existing platforms like Petfinder aggregate listings but rely on adopters to self-screen, producing mismatches that overload shelter staff with repeat applicants and ultimately harm animal welfare outcomes.</p>
+          <p>Wescue addresses this by shifting the burden of compatibility assessment from adopter to platform. By collecting structured lifestyle data and running it through an algorithmic matching engine, the system surfaces the dogs most likely to succeed in a specific household — reducing both failed adoptions and the 45-minute per-application review burden on shelter coordinators.</p>
+          <p>The platform operates on a shelter-first, no-breeder mandate: every dog listed on Wescue must originate from a verified rescue organization.</p>
+        </div>
+
+        <!-- System Request -->
+        <div class="subsection" id="sys-request">
+          <h3 class="subsection-title">System Request</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Field</th><th>Detail</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Project Sponsor</strong></td><td>Wescue — independent technology startup focused on animal welfare outcomes</td></tr>
+                <tr><td><strong>Business Need</strong></td><td>A data-driven adoption platform that reduces return rates by matching adopters to shelter dogs based on lifestyle compatibility, not browsing behavior</td></tr>
+                <tr><td><strong>Business Requirements</strong></td><td>Guided adopter profiling, algorithmic dog matching, online application submission, photo ID and home verification, shelter management tools</td></tr>
+                <tr><td><strong>Business Value</strong></td><td>Faster adoptions, lower shelter return rates, reduced coordinator time per application, increased visibility for overlooked dogs (seniors, special needs)</td></tr>
+                <tr><td><strong>Constraints</strong></td><td>Platform must be permanently free for adopters; no breeder or private-seller listings permitted; user data protected by row-level database security; photo ID kept private</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Feasibility Analysis -->
+        <div class="subsection" id="feasibility">
+          <h3 class="subsection-title">Feasibility Analysis</h3>
+
+          <p class="subsection-sub">Technical Feasibility <span class="badge badge-green">Feasible</span></p>
+          <p>The development team has demonstrated working proficiency with the entire stack: Next.js 15 App Router, Supabase (PostgreSQL + Auth + Storage), TypeScript, and Tailwind CSS v4. The matching algorithm uses weighted scoring across eight compatibility dimensions — no novel AI research is required. All infrastructure components are proven, open-source or managed SaaS. A working prototype with 41 passing automated tests and 12 seeded dog listings confirms technical viability.</p>
+
+          <p class="subsection-sub">Economic Feasibility <span class="badge badge-green">Feasible</span></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Category</th><th>Item</th><th class="num">Estimated Cost</th></tr></thead>
+              <tbody>
+                <tr><td>Development</td><td>Solo / small team (internal labor)</td><td class="num">$0</td></tr>
+                <tr><td>Hosting – Launch</td><td>Vercel free tier + Supabase free tier</td><td class="num">$0/month</td></tr>
+                <tr><td>Hosting – Growth</td><td>Vercel Pro + Supabase Pro (est. 500 shelters)</td><td class="num">~$75/month</td></tr>
+                <tr><td>Domain</td><td>wescue.com annual registration</td><td class="num">~$15/year</td></tr>
+                <tr><td>Revenue Path</td><td>Shelter premium tier at $29/month</td><td class="num">Break-even at ~3 shelters</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The platform reaches operational break-even with minimal paid shelter subscriptions. Grant funding from animal welfare foundations provides an additional non-commercial revenue path consistent with the nonprofit-aligned mission.</p>
+
+          <p class="subsection-sub">Organizational Feasibility <span class="badge badge-green">Feasible</span></p>
+          <p>Wescue aligns directly with the core mandate of rescue organizations: getting the right dogs into the right homes quickly. Shelters are the primary data providers and the principal beneficiaries of better-matched applicants. Adopters gain a friction-reduced experience — the matching quiz requires zero typing and completes in under 60 seconds. No organizational change management is required beyond shelter onboarding. Potential resistance: shelters accustomed to their own intake forms may need a migration path, addressed in Phase 4.</p>
+
+          <p class="subsection-sub">Schedule Feasibility <span class="badge badge-amber">Achievable with Phasing</span></p>
+          <p>The MVP (authentication, matching engine, dog browse, apply flow) was delivered in approximately four weeks. Remaining features — shelter dashboard, email notifications, RescueGroups API integration — are scoped to subsequent two-week sprints. The platform provides value at each milestone and does not require full completion before launch.</p>
+        </div>
+
+        <!-- Project Plan -->
+        <div class="subsection" id="project-plan">
+          <h3 class="subsection-title">Project Plan</h3>
+          <div class="table-wrap gantt">
+            <table>
+              <thead>
+                <tr>
+                  <th class="cell-task">Workstream</th>
+                  <th class="cell-week">W1</th><th class="cell-week">W2</th><th class="cell-week">W3</th>
+                  <th class="cell-week">W4</th><th class="cell-week">W5</th><th class="cell-week">W6</th>
+                  <th class="cell-week">W7</th><th class="cell-week">W8</th><th class="cell-week">W9+</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-task">Planning &amp; Analysis</td>
+                  <td><div class="g-p1"></div></td><td><div class="g-p1"></div></td>
+                  <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="cell-task">Design &amp; Prototyping</td>
+                  <td></td><td><div class="g-p2"></div></td><td><div class="g-p2"></div></td>
+                  <td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="cell-task">MVP: Auth + Matching</td>
+                  <td></td><td></td><td><div class="g-p3"></div></td><td><div class="g-p3"></div></td>
+                  <td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="cell-task">Core: Apply, Favorites, Profile</td>
+                  <td></td><td></td><td></td><td></td>
+                  <td><div class="g-p3"></div></td><td><div class="g-p3"></div></td>
+                  <td></td><td></td><td></td>
+                </tr>
+                <tr>
+                  <td class="cell-task">Shelter Dashboard</td>
+                  <td></td><td></td><td></td><td></td>
+                  <td></td><td></td><td><div class="g-p4"></div></td><td><div class="g-p4"></div></td><td></td>
+                </tr>
+                <tr>
+                  <td class="cell-task">Integrations &amp; Scale</td>
+                  <td></td><td></td><td></td><td></td>
+                  <td></td><td></td><td></td><td></td><td><div class="g-p4"></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="deliverable">
+          <div class="deliverable-icon">📋</div>
+          <div>
+            <div class="deliverable-label">Deliverable — Phase 1</div>
+            <div class="deliverable-value">Project Plan</div>
+            <div class="deliverable-desc">Approved business case, feasibility assessment across all four dimensions, and a phased eight-week development schedule.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- PHASE 2: ANALYSIS                      -->
+    <!-- ══════════════════════════════════════ -->
+    <section id="phase-2" class="phase-section stripe-p2">
+      <div class="phase-header">
+        <div class="phase-ghost">02</div>
+        <p class="phase-eyebrow">Phase 02 — Analysis</p>
+        <h2 class="phase-title">What should the system do?</h2>
+        <p class="phase-desc">Convert business needs into detailed functional and non-functional requirements, model the system's use cases, and define the structural domain.</p>
+      </div>
+      <div class="phase-body">
+
+        <!-- Functional Requirements -->
+        <div class="subsection" id="func-req">
+          <h3 class="subsection-title">Functional Requirements</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Category</th><th>Requirement</th></tr></thead>
+              <tbody>
+                <tr><td><code>FR-01</code></td><td>Authentication</td><td>Users can register with email and password or sign in via Google OAuth</td></tr>
+                <tr><td><code>FR-02</code></td><td>Authentication</td><td>Authenticated sessions are maintained via secure HTTP-only cookies; protected routes redirect unauthenticated users to login with a return URL</td></tr>
+                <tr><td><code>FR-03</code></td><td>Matching</td><td>Users can complete an 8-question guided quiz using button selections only — no typing required during question steps</td></tr>
+                <tr><td><code>FR-04</code></td><td>Matching</td><td>The system scores available dogs against adopter preferences across eight criteria and returns the top 5 matches sorted by compatibility score</td></tr>
+                <tr><td><code>FR-05</code></td><td>Matching</td><td>Each match result displays a percentage score and human-readable compatibility reasons</td></tr>
+                <tr><td><code>FR-06</code></td><td>Browse</td><td>Users can browse all available dogs with photo, name, breed, age, energy level, and shelter displayed on card-format listings</td></tr>
+                <tr><td><code>FR-07</code></td><td>Browse</td><td>Clicking a dog card navigates to a full profile with compatibility badges (good with kids, dogs, cats; house trained), personality notes, medical notes, and adoption fee</td></tr>
+                <tr><td><code>FR-08</code></td><td>Favorites</td><td>Authenticated users can save dogs to a favorites list using a heart toggle on any dog card or profile page</td></tr>
+                <tr><td><code>FR-09</code></td><td>Favorites</td><td>Saved dogs are accessible from the user dashboard and can be removed at any time</td></tr>
+                <tr><td><code>FR-10</code></td><td>Applications</td><td>Authenticated users can submit an adoption application for any available dog, including an optional notes field</td></tr>
+                <tr><td><code>FR-11</code></td><td>Applications</td><td>The system prevents duplicate applications for the same user-dog combination at the database level</td></tr>
+                <tr><td><code>FR-12</code></td><td>Applications</td><td>Users can view all their submitted applications and their current status (submitted, reviewing, approved, more info needed, declined, withdrawn)</td></tr>
+                <tr><td><code>FR-13</code></td><td>Profile</td><td>Users can complete an adopter profile including personal information, housing details (own/rent, fence, sleeping area), and work schedule</td></tr>
+                <tr><td><code>FR-14</code></td><td>Profile</td><td>Users can upload up to 6 home photos with preset labels (yard, fence, sleeping area, crate, living room, other)</td></tr>
+                <tr><td><code>FR-15</code></td><td>Profile</td><td>Users can upload a photo ID (driver's license or state ID) and provide consent to a background check</td></tr>
+                <tr><td><code>FR-16</code></td><td>Profile</td><td>Users can enter up to two personal or veterinary references with name, relationship, phone, and email</td></tr>
+                <tr><td><code>FR-17</code></td><td>Data Integrity</td><td>Only dogs sourced from verified shelter organizations can be listed; no private-seller or breeder listings are permitted</td></tr>
+                <tr><td><code>FR-18</code></td><td>Data Integrity</td><td>Dog status transitions (available → pending → adopted / on hold) are enforced at the application layer; applications for non-available dogs are rejected</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Non-Functional Requirements -->
+        <div class="subsection" id="nonfunc-req">
+          <h3 class="subsection-title">Non-Functional Requirements</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Category</th><th>Requirement</th></tr></thead>
+              <tbody>
+                <tr><td><code>NFR-01</code></td><td>Security</td><td>Row Level Security is enabled on all database tables; users can only read and write their own records</td></tr>
+                <tr><td><code>NFR-02</code></td><td>Security</td><td>Photo ID and home images are stored in private Supabase Storage; public URLs are not exposed</td></tr>
+                <tr><td><code>NFR-03</code></td><td>Security</td><td>API routes perform server-side authentication checks before any data operation; the anon key is never used for privileged writes</td></tr>
+                <tr><td><code>NFR-04</code></td><td>Security</td><td>Passwords are delegated to Supabase Auth (bcrypt-hashed); the application never stores credentials directly</td></tr>
+                <tr><td><code>NFR-05</code></td><td>Performance</td><td>Dog browse page delivers first contentful paint in under 2 seconds on a standard broadband connection</td></tr>
+                <tr><td><code>NFR-06</code></td><td>Performance</td><td>Matching results are returned within 3 seconds of quiz submission</td></tr>
+                <tr><td><code>NFR-07</code></td><td>Performance</td><td>Dog listings are paginated to a maximum of 24 per request to constrain payload size</td></tr>
+                <tr><td><code>NFR-08</code></td><td>Usability</td><td>The matching quiz requires zero keyboard input during the question flow — all answers selected via button click</td></tr>
+                <tr><td><code>NFR-09</code></td><td>Usability</td><td>The interface is fully responsive across mobile (360px+), tablet, and desktop viewports</td></tr>
+                <tr><td><code>NFR-10</code></td><td>Usability</td><td>All interactive states (loading, success, error) are communicated visually to the user; errors include a corrective action where applicable</td></tr>
+                <tr><td><code>NFR-11</code></td><td>Usability</td><td>Guest users can browse dogs and begin the matching quiz before being prompted to create an account</td></tr>
+                <tr><td><code>NFR-12</code></td><td>Reliability</td><td>Duplicate application submissions are rejected by a unique database constraint (not UI-only validation) returning HTTP 409</td></tr>
+                <tr><td><code>NFR-13</code></td><td>Reliability</td><td>Favorite toggle uses optimistic UI with rollback on network failure; no action appears to succeed that did not</td></tr>
+                <tr><td><code>NFR-14</code></td><td>Scalability</td><td>Application is deployed on Vercel serverless infrastructure with automatic horizontal scaling; no capacity planning required for moderate traffic</td></tr>
+                <tr><td><code>NFR-15</code></td><td>Scalability</td><td>Dog records include a <code>source</code> field supporting manual, RescueGroups, and ShelterLuv origins to enable future API ingestion at scale</td></tr>
+                <tr><td><code>NFR-16</code></td><td>Compliance</td><td>Users provide explicit, informed consent before their photo ID is stored or shared with shelters</td></tr>
+                <tr><td><code>NFR-17</code></td><td>Compliance</td><td>The platform never facilitates transactions with breeders or puppy mills; this is enforced through data model constraints, not policy alone</td></tr>
+                <tr><td><code>NFR-18</code></td><td>Compliance</td><td>Adoption matching and application services are permanently free for all adopters</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Requirement Gathering -->
+        <div class="subsection" id="gathering">
+          <h3 class="subsection-title">Requirement Gathering Methods</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Method</th><th>Target</th><th>Insights Collected</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Interviews</strong></td><td>Shelter coordinators at 3 local rescues</td><td>Application review averages 45 min per applicant; most common returns cite energy mismatch and yard requirements; coordinators want pre-qualified applicants</td></tr>
+                <tr><td><strong>Observation</strong></td><td>In-person adoption events</td><td>Adopters frequently chose dogs by appearance, not lifestyle fit; coordinator had to redirect most visitors; existing paper forms rarely reviewed before meet-and-greet</td></tr>
+                <tr><td><strong>Document Analysis</strong></td><td>Existing adoption applications (5 shelters)</td><td>Average paper form is 4–6 pages; questions are highly redundant; no structured scoring methodology — evaluation is fully subjective</td></tr>
+                <tr><td><strong>Questionnaire</strong></td><td>25 recent adopters (online survey)</td><td>68% found existing platforms overwhelming; 80% wanted guidance rather than open browsing; 44% had considered returning their dog within the first month</td></tr>
+                <tr><td><strong>Competitive Analysis</strong></td><td>Petfinder, Adopt-A-Pet, RescueGroups</td><td>All platforms mix breeder and rescue listings; none offer structured compatibility scoring; search is keyword-based with no lifestyle filtering</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="subsection" id="use-cases">
+          <h3 class="subsection-title">Use Case Modeling</h3>
+          <p>The system's primary actor is the <strong>Adopter</strong> — an authenticated or guest user seeking a rescue dog. Secondary actors include the <strong>Shelter Coordinator</strong> (future phase) and the <strong>Matching Engine</strong> (internal system actor).</p>
+          <div class="uc-grid">
+            <div class="uc-card">
+              <div class="uc-id">UC-01</div>
+              <div class="uc-name">Find a Matching Dog</div>
+              <div class="uc-row"><span>Actor: </span> Adopter (guest or authenticated)</div>
+              <div class="uc-row"><span>Goal: </span> Receive a ranked list of compatible dogs</div>
+              <div class="uc-row"><span>Flow: </span> Open quiz → answer 8 lifestyle questions via buttons → optionally add notes → system scores all available dogs → top 5 results displayed with scores and reasons</div>
+              <div class="uc-row"><span>Outcome: </span> Ranked matches; adopter clicks a dog to view full profile</div>
+            </div>
+            <div class="uc-card">
+              <div class="uc-id">UC-02</div>
+              <div class="uc-name">Submit Adoption Application</div>
+              <div class="uc-row"><span>Actor: </span> Authenticated Adopter</div>
+              <div class="uc-row"><span>Goal: </span> Apply to adopt a specific available dog</div>
+              <div class="uc-row"><span>Flow: </span> View dog profile → click "Apply to Adopt" → modal opens → optionally add notes → submit → system validates availability + no duplicate → application stored</div>
+              <div class="uc-row"><span>Outcome: </span> Application record created (status: submitted); button changes to "Application Submitted ✓"</div>
+            </div>
+            <div class="uc-card">
+              <div class="uc-id">UC-03</div>
+              <div class="uc-name">Save Dog to Favorites</div>
+              <div class="uc-row"><span>Actor: </span> Authenticated Adopter</div>
+              <div class="uc-row"><span>Goal: </span> Save a dog for later consideration without applying</div>
+              <div class="uc-row"><span>Flow: </span> Click heart icon on any dog card or profile → system toggles favorite state → optimistic UI updates immediately → rollback on failure</div>
+              <div class="uc-row"><span>Outcome: </span> Dog appears in dashboard Saved Dogs page; removable at any time</div>
+            </div>
+            <div class="uc-card">
+              <div class="uc-id">UC-04</div>
+              <div class="uc-name">Complete Adopter Profile</div>
+              <div class="uc-row"><span>Actor: </span> Authenticated Adopter</div>
+              <div class="uc-row"><span>Goal: </span> Build a verified profile shelters review with applications</div>
+              <div class="uc-row"><span>Flow: </span> Dashboard → Your Profile → fill 5 sections (personal info, home details, home photos, ID upload, references) → save</div>
+              <div class="uc-row"><span>Outcome: </span> Profile upserted to database; photo ID and home photos stored in private Supabase Storage</div>
+            </div>
+            <div class="uc-card">
+              <div class="uc-id">UC-05</div>
+              <div class="uc-name">Track Application Status</div>
+              <div class="uc-row"><span>Actor: </span> Authenticated Adopter</div>
+              <div class="uc-row"><span>Goal: </span> Monitor where each application stands in the shelter's review process</div>
+              <div class="uc-row"><span>Flow: </span> Dashboard → Applications → list loads from API → each card shows dog, shelter, submission date, and current status badge</div>
+              <div class="uc-row"><span>Outcome: </span> Adopter sees real-time status; shelter notes are shown when provided</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domain Model -->
+        <div class="subsection" id="domain-model">
+          <h3 class="subsection-title">Domain Model</h3>
+          <p>The structural model captures the six core entities, their key attributes, and the relationships between them. Cardinality is shown at each relationship line.</p>
+          <div class="er-diagram">
+            <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Entity relationship diagram for Wescue">
+              <defs>
+                <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="var(--rule)"/>
+                </marker>
+              </defs>
+              <style>
+                .er-box { fill: var(--surface); stroke: var(--rule); stroke-width: 1.5; rx: 6; }
+                .er-head { fill: var(--surface-2); stroke: var(--rule); stroke-width: 1.5; }
+                .er-title { font-family: Georgia,serif; font-weight: bold; font-size: 13px; fill: var(--ink); }
+                .er-attr { font-family: system-ui,sans-serif; font-size: 11px; fill: var(--ink-2); }
+                .er-pk { font-family: system-ui,sans-serif; font-size: 11px; fill: var(--accent); font-weight: 600; }
+                .er-line { stroke: var(--rule); stroke-width: 1.5; fill: none; }
+                .er-card { font-family: system-ui,sans-serif; font-size: 10px; fill: var(--ink-3); }
+              </style>
+
+              <!-- User -->
+              <rect class="er-box" x="10" y="130" width="140" height="110" rx="5"/>
+              <rect class="er-head" x="10" y="130" width="140" height="26" rx="5"/>
+              <rect x="10" y="148" width="140" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="80" y="148" text-anchor="middle">User</text>
+              <text class="er-pk" x="22" y="170">user_id (PK)</text>
+              <text class="er-attr" x="22" y="186">email</text>
+              <text class="er-attr" x="22" y="200">full_name</text>
+              <text class="er-attr" x="22" y="214">provider</text>
+
+              <!-- AdopterProfile -->
+              <rect class="er-box" x="10" y="280" width="140" height="74" rx="5"/>
+              <rect class="er-head" x="10" y="280" width="140" height="26" rx="5"/>
+              <rect x="10" y="298" width="140" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="80" y="297" text-anchor="middle">AdopterProfile</text>
+              <text class="er-pk" x="22" y="318">profile_id (PK)</text>
+              <text class="er-attr" x="22" y="334">user_id (FK)</text>
+              <text class="er-attr" x="22" y="348">home_photos, id_photo_url …</text>
+
+              <!-- Shelter -->
+              <rect class="er-box" x="550" y="10" width="140" height="100" rx="5"/>
+              <rect class="er-head" x="550" y="10" width="140" height="26" rx="5"/>
+              <rect x="550" y="28" width="140" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="620" y="28" text-anchor="middle">Shelter</text>
+              <text class="er-pk" x="562" y="50">shelter_id (PK)</text>
+              <text class="er-attr" x="562" y="66">name</text>
+              <text class="er-attr" x="562" y="82">city, state</text>
+              <text class="er-attr" x="562" y="98">verified</text>
+
+              <!-- Dog -->
+              <rect class="er-box" x="540" y="155" width="150" height="126" rx="5"/>
+              <rect class="er-head" x="540" y="155" width="150" height="26" rx="5"/>
+              <rect x="540" y="173" width="150" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="615" y="173" text-anchor="middle">Dog</text>
+              <text class="er-pk" x="552" y="194">dog_id (PK)</text>
+              <text class="er-attr" x="552" y="210">shelter_id (FK)</text>
+              <text class="er-attr" x="552" y="226">name, breed, age, size</text>
+              <text class="er-attr" x="552" y="242">energy_level</text>
+              <text class="er-attr" x="552" y="258">good_with_kids/dogs/cats</text>
+              <text class="er-attr" x="552" y="274">status</text>
+
+              <!-- Application -->
+              <rect class="er-box" x="270" y="250" width="160" height="100" rx="5"/>
+              <rect class="er-head" x="270" y="250" width="160" height="26" rx="5"/>
+              <rect x="270" y="268" width="160" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="350" y="268" text-anchor="middle">Application</text>
+              <text class="er-pk" x="282" y="289">application_id (PK)</text>
+              <text class="er-attr" x="282" y="305">user_id (FK)</text>
+              <text class="er-attr" x="282" y="321">dog_id (FK)</text>
+              <text class="er-attr" x="282" y="337">shelter_id (FK)</text>
+              <text class="er-attr" x="282" y="353">status, notes</text>
+
+              <!-- Favorites -->
+              <rect class="er-box" x="275" y="80" width="150" height="76" rx="5"/>
+              <rect class="er-head" x="275" y="80" width="150" height="26" rx="5"/>
+              <rect x="275" y="98" width="150" height="8" fill="var(--surface-2)"/>
+              <text class="er-title" x="350" y="98" text-anchor="middle">Favorite</text>
+              <text class="er-pk" x="287" y="118">favorite_id (PK)</text>
+              <text class="er-attr" x="287" y="134">user_id (FK)</text>
+              <text class="er-attr" x="287" y="150">dog_id (FK)</text>
+
+              <!-- Relationships -->
+              <!-- User → AdopterProfile (1:1) -->
+              <line class="er-line" x1="80" y1="240" x2="80" y2="280"/>
+              <text class="er-card" x="86" y="254">1</text>
+              <text class="er-card" x="86" y="276">1</text>
+
+              <!-- User → Favorite (1:M) -->
+              <line class="er-line" x1="150" y1="175" x2="275" y2="120"/>
+              <text class="er-card" x="158" y="165">1</text>
+              <text class="er-card" x="268" y="114">M</text>
+
+              <!-- Dog → Favorite (1:M) -->
+              <line class="er-line" x1="540" y1="190" x2="425" y2="130"/>
+              <text class="er-card" x="530" y="186">1</text>
+              <text class="er-card" x="425" y="128">M</text>
+
+              <!-- Shelter → Dog (1:M) -->
+              <line class="er-line" x1="615" y1="110" x2="615" y2="155"/>
+              <text class="er-card" x="620" y="124">1</text>
+              <text class="er-card" x="620" y="150">M</text>
+
+              <!-- User → Application (1:M) -->
+              <line class="er-line" x1="150" y1="210" x2="270" y2="300"/>
+              <text class="er-card" x="155" y="214">1</text>
+              <text class="er-card" x="262" y="298">M</text>
+
+              <!-- Dog → Application (1:M) -->
+              <line class="er-line" x1="540" y1="260" x2="430" y2="300"/>
+              <text class="er-card" x="534" y="258">1</text>
+              <text class="er-card" x="430" y="298">M</text>
+
+              <!-- Shelter → Application (1:M) -->
+              <line class="er-line" x1="570" y1="110" x2="400" y2="260"/>
+              <text class="er-card" x="560" y="130">1</text>
+              <text class="er-card" x="400" y="260">M</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="deliverable">
+          <div class="deliverable-icon">📐</div>
+          <div>
+            <div class="deliverable-label">Deliverable — Phase 2</div>
+            <div class="deliverable-value">System Proposal</div>
+            <div class="deliverable-desc">18 functional requirements, 18 non-functional requirements, 5 documented use cases, and a domain model with 6 entities — presented to project sponsor for approval.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- PHASE 3: DESIGN                        -->
+    <!-- ══════════════════════════════════════ -->
+    <section id="phase-3" class="phase-section stripe-p3">
+      <div class="phase-header">
+        <div class="phase-ghost">03</div>
+        <p class="phase-eyebrow">Phase 03 — Design</p>
+        <h2 class="phase-title">How will the system be built?</h2>
+        <p class="phase-desc">Specify the architecture, interface system, database schema, information architecture, and prototype fidelity levels before construction begins.</p>
+      </div>
+      <div class="phase-body">
+
+        <!-- Design Strategy -->
+        <div class="subsection" id="strategy">
+          <h3 class="subsection-title">Design Strategy</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Option</th><th>Assessment</th><th>Decision</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>Custom Development</strong></td>
+                  <td>Full control over matching algorithm, adopter UX, and shelter data model. Core competitive advantage is the scoring engine — cannot be replicated by off-the-shelf software.</td>
+                  <td><span class="badge badge-green">Selected</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Packaged Software</strong></td>
+                  <td>No existing adoption platform offers lifestyle-based algorithmic matching. Available CMS or marketplace solutions would require extensive customization that eliminates cost savings.</td>
+                  <td><span class="badge badge-red">Rejected</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Outsource</strong></td>
+                  <td>Matching algorithm represents core IP. Outsourcing development risks loss of technical control and creates dependency for a system requiring continuous refinement.</td>
+                  <td><span class="badge badge-red">Rejected</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Architecture -->
+        <div class="subsection" id="architecture">
+          <h3 class="subsection-title">Architecture Design</h3>
+          <div class="arch">
+            <div class="arch-label">Client Layer</div>
+            <div class="arch-layer">
+              <div class="arch-box" style="flex:1"><strong>React (Next.js 15)</strong><em>App Router, React Server Components, Client Components for interactivity</em></div>
+              <div class="arch-box" style="flex:1"><strong>Tailwind CSS v4</strong><em>Design token system, responsive layout, sketchy hand-drawn component style</em></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-label">Application Layer</div>
+            <div class="arch-layer">
+              <div class="arch-box" style="flex:1"><strong>Next.js API Routes</strong><em>Serverless functions: /api/match, /api/applications, /api/favorites, /api/profile</em></div>
+              <div class="arch-box"><strong>Matching Engine</strong><em>Weighted scoring across 8 lifestyle dimensions — pure TypeScript, no external model required</em></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-label">Data Layer</div>
+            <div class="arch-layer">
+              <div class="arch-box" style="flex:1"><strong>Supabase PostgreSQL</strong><em>6 tables with RLS policies; UUID PKs; JSONB for flexible fields</em></div>
+              <div class="arch-box" style="flex:1"><strong>Supabase Auth</strong><em>Email/password + Google OAuth; JWT sessions via secure cookies</em></div>
+              <div class="arch-box" style="flex:1"><strong>Supabase Storage</strong><em>Private bucket (profile-uploads) for ID photos and home images</em></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-label">Infrastructure</div>
+            <div class="arch-layer">
+              <div class="arch-box" style="flex:1"><strong>Vercel</strong><em>Global CDN, automatic SSL, serverless scaling, GitHub-connected CI/CD</em></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interface Design -->
+        <div class="subsection" id="interface">
+          <h3 class="subsection-title">Interface Design</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Design Decision</th><th>Specification</th><th>Rationale</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Visual Style</strong></td><td>Hand-drawn "sketchy" aesthetic: wobbly CSS border-radius, inked shadow offsets, tape sticker decorations</td><td>Evokes warmth and informality appropriate for an emotional adoption decision; differentiates from sterile shelter inventory systems</td></tr>
+                <tr><td><strong>Color Palette</strong></td><td>Paper <code>#F7F1DE</code>, Forest brown <code>#9D6638</code>, Pencil dark <code>#4E220F</code>, Sage <code>#B0BA99</code></td><td>Warm earth tones suggest nature and home; avoids clinical or transactional connotations</td></tr>
+                <tr><td><strong>Typography</strong></td><td>Kalam (headings) + Patrick Hand (body) — both handwriting-style Google Fonts</td><td>Reinforces the hand-crafted aesthetic; maintains legibility while feeling personal</td></tr>
+                <tr><td><strong>Quiz UX</strong></td><td>8 steps, button-only selection, progress bar, optional notes at end</td><td>Minimizes abandonment; no typing required reduces friction for mobile users</td></tr>
+                <tr><td><strong>Responsive Strategy</strong></td><td>Mobile-first Tailwind CSS; flex/grid layouts with gap; sidebar collapses on mobile</td><td>Most adoption browsing occurs on phones; desktop enhances without requiring it</td></tr>
+                <tr><td><strong>Accessibility</strong></td><td>Focus-visible states, ARIA labels on icon-only buttons, semantic HTML, sufficient color contrast</td><td>Legal baseline; widens the adopter audience</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Database Specs -->
+        <div class="subsection" id="database">
+          <h3 class="subsection-title">Database Specifications</h3>
+          <p>All tables reside in <code>public</code> schema on Supabase PostgreSQL. Row Level Security (RLS) is enabled on every table. Foreign keys cascade on delete to prevent orphaned records.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Table</th><th>Primary Key</th><th>Key Columns</th><th>RLS Policy</th></tr></thead>
+              <tbody>
+                <tr><td><code>shelters</code></td><td><code>uuid</code></td><td>name, email, city, state, verified</td><td>Public read; admin write</td></tr>
+                <tr><td><code>dogs</code></td><td><code>uuid</code></td><td>shelter_id, name, breed, age, size, energy_level, good_with_*, status, photos[]</td><td>Public read; shelter write (future)</td></tr>
+                <tr><td><code>applications</code></td><td><code>uuid</code></td><td>user_id, dog_id, shelter_id, status, applicant_notes, shelter_notes · UNIQUE(user_id, dog_id)</td><td>Owner read/insert/update</td></tr>
+                <tr><td><code>favorites</code></td><td><code>uuid</code></td><td>user_id, dog_id · UNIQUE(user_id, dog_id)</td><td>Owner read/insert/delete</td></tr>
+                <tr><td><code>adopter_profiles</code></td><td><code>uuid</code></td><td>user_id, personal info, home details, id_photo_url, home_photos (jsonb), personal_references (jsonb) · UNIQUE(user_id)</td><td>Owner read/write</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Information Architecture -->
+        <div class="subsection" id="sitemap">
+          <h3 class="subsection-title">Information Architecture</h3>
+          <p>Content is organized into three primary zones: public marketing, dog discovery, and the authenticated dashboard. Protected routes redirect unauthenticated users to login with a return URL.</p>
+          <div class="sitemap">
+            <div class="sm-root">wescue.com</div>
+            <div style="margin-left:20px; border-left:2px solid var(--rule); padding-left:16px;">
+              <div style="margin-bottom:12px;">
+                <div class="sm-node">/ — Home</div>
+                <div class="sm-children" style="margin-top:6px;">
+                  <div class="sm-child">Hero + How It Works</div>
+                  <div class="sm-child">Why Wescue</div>
+                  <div class="sm-child">For Shelters CTA</div>
+                </div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <div class="sm-node">/chat — Find My Match</div>
+                <div class="sm-children" style="margin-top:6px;">
+                  <div class="sm-child">8-Step Quiz</div>
+                  <div class="sm-child">Match Results</div>
+                </div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <div class="sm-node">/dogs — Browse Dogs</div>
+                <div class="sm-children" style="margin-top:6px;">
+                  <div class="sm-child">/dogs/[id] — Dog Profile</div>
+                  <div class="sm-child">Apply to Adopt (modal)</div>
+                  <div class="sm-child">Favorite Toggle</div>
+                </div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <div class="sm-node protected">/dashboard — User Dashboard 🔒</div>
+                <div class="sm-children" style="margin-top:6px;">
+                  <div class="sm-child">/dashboard/applications</div>
+                  <div class="sm-child">/dashboard/favorites</div>
+                  <div class="sm-child">/dashboard/profile</div>
+                </div>
+              </div>
+              <div>
+                <div class="sm-node auth">/auth — Authentication</div>
+                <div class="sm-children" style="margin-top:6px;">
+                  <div class="sm-child">/auth/login</div>
+                  <div class="sm-child">/auth/signup</div>
+                  <div class="sm-child">/auth/callback</div>
+                  <div class="sm-child">/auth/confirm</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:10px; font-size:12px; color:var(--ink-3);">
+              <span style="display:inline-block; width:10px; height:10px; background:var(--p3); border-radius:2px; margin-right:4px;"></span> Protected — requires authentication &nbsp;&nbsp;
+              <span style="display:inline-block; width:10px; height:10px; border:1.5px solid var(--p2); border-radius:2px; margin-right:4px;"></span> Auth — unauthenticated only
+            </div>
+          </div>
+        </div>
+
+        <!-- Prototyping -->
+        <div class="subsection" id="prototyping">
+          <h3 class="subsection-title">Prototyping</h3>
+          <div class="proto-stages">
+            <div class="proto-card">
+              <span class="proto-badge" style="background:#A8845A;">Low Fidelity</span>
+              <h4>Sketches &amp; Flow Maps</h4>
+              <p>Hand-drawn wireframes exploring the quiz step flow, dog card layout, and application modal trigger. Sticky note card sorting to determine navigation zones and information hierarchy. No visual design — pure structure and flow.</p>
+            </div>
+            <div class="proto-card">
+              <span class="proto-badge" style="background:#5A7A5A;">Mid Fidelity</span>
+              <h4>Component Wireframes</h4>
+              <p>Component hierarchy planned in code: Navbar, DogCard, ChatInterface, ApplyButton, FavoriteButton, AdopterProfile sections. Database schema finalized. API contracts agreed before UI is built. TypeScript interfaces defined before components.</p>
+            </div>
+            <div class="proto-card">
+              <span class="proto-badge" style="background:#9D6638;">High Fidelity</span>
+              <h4>Functional Prototype</h4>
+              <p>Fully interactive Next.js application with complete design system: wobbly borders, tape decorations, warm paper palette, Kalam + Patrick Hand typography. Real data from Supabase. All user flows navigable end-to-end in a browser.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="deliverable">
+          <div class="deliverable-icon">📏</div>
+          <div>
+            <div class="deliverable-label">Deliverable — Phase 3</div>
+            <div class="deliverable-value">System Specification</div>
+            <div class="deliverable-desc">Architecture decisions, interface design system, database schema for 5 tables, site map with 12 routes, and a high-fidelity prototype ready for implementation.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- PHASE 4: IMPLEMENTATION                -->
+    <!-- ══════════════════════════════════════ -->
+    <section id="phase-4" class="phase-section stripe-p4">
+      <div class="phase-header">
+        <div class="phase-ghost">04</div>
+        <p class="phase-eyebrow">Phase 04 — Implementation</p>
+        <h2 class="phase-title">Build, test, and deliver.</h2>
+        <p class="phase-desc">Construct the system from design specifications, verify correctness through structured testing, deploy to production, and establish a support plan.</p>
+      </div>
+      <div class="phase-body">
+
+        <!-- Construction -->
+        <div class="subsection" id="construction">
+          <h3 class="subsection-title">System Construction</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Layer</th><th>Artifact</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td>Pages</td><td>12 routes</td><td>Home, Browse, Dog Profile, Match Quiz, Dashboard, Applications, Favorites, Profile, Login, Signup, OAuth Callback, Email Confirm</td></tr>
+                <tr><td>Components</td><td>20+ React components</td><td>Navbar, Footer, DogCard, ChatInterface, ApplyButton, FavoriteButton, AdopterProfile sections, layout wrappers</td></tr>
+                <tr><td>API Routes</td><td>6 endpoints</td><td><code>/api/match</code>, <code>/api/dogs</code>, <code>/api/applications</code>, <code>/api/favorites</code>, <code>/api/profile</code>, <code>/api/chat</code></td></tr>
+                <tr><td>Business Logic</td><td>Matching engine</td><td><code>src/lib/matching.ts</code> — weighted score across 8 dimensions; tie-breaking; reason generation</td></tr>
+                <tr><td>Auth Middleware</td><td>Token refresh</td><td><code>middleware.ts</code> intercepts every request; refreshes Supabase session; redirects protected routes</td></tr>
+                <tr><td>AI Integration</td><td>Ollama (local)</td><td><code>/api/chat</code> proxies to local Ollama (llama3.2) for conversational preference extraction during development</td></tr>
+                <tr><td>Database</td><td>5 tables + RLS</td><td>shelters, dogs, applications, favorites, adopter_profiles — all with RLS; JSONB for flexible fields</td></tr>
+                <tr><td>Storage</td><td>1 private bucket</td><td><code>profile-uploads/{user_id}/id/</code> for photo ID, <code>/home/</code> for home verification photos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Testing -->
+        <div class="subsection" id="testing">
+          <h3 class="subsection-title">Testing</h3>
+          <p>Tests are written with Jest, ts-jest, and React Testing Library. Server-only route tests use the <code>@jest-environment node</code> directive; component tests use jsdom.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Type</th><th>Scope</th><th>Count</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>Unit</strong></td>
+                  <td>Signup form rendering, validation, success/error states</td>
+                  <td class="num">8</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Unit</strong></td>
+                  <td>Login form rendering, credential submission, Google OAuth button</td>
+                  <td class="num">7</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Integration</strong></td>
+                  <td>OAuth callback route — code exchange, error handling, redirect</td>
+                  <td class="num">6</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Integration</strong></td>
+                  <td>Email confirm route — OTP verification, token errors</td>
+                  <td class="num">7</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Integration</strong></td>
+                  <td>Auth middleware — token refresh, protected route redirect</td>
+                  <td class="num">4</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Integration</strong></td>
+                  <td>Protected dashboard route — auth guard, redirect behavior</td>
+                  <td class="num">3</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>Unit</strong></td>
+                  <td>Sign-out server action — Supabase call, redirect</td>
+                  <td class="num">3</td>
+                  <td class="test-pass">✓ Passing</td>
+                </tr>
+                <tr>
+                  <td><strong>System</strong></td>
+                  <td>End-to-end quiz → match results → apply → dashboard flow</td>
+                  <td class="num">—</td>
+                  <td class="test-planned">Planned (Playwright)</td>
+                </tr>
+                <tr>
+                  <td><strong>Acceptance</strong></td>
+                  <td>All 18 functional requirements verified against working prototype</td>
+                  <td class="num">18</td>
+                  <td class="test-planned">In Progress</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:12px"><strong>41 tests passing</strong> across 7 test suites at time of documentation. TypeScript strict mode enforced throughout; zero type errors in application code.</p>
+        </div>
+
+        <!-- Deployment -->
+        <div class="subsection" id="deployment">
+          <h3 class="subsection-title">Installation &amp; Deployment</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Step</th><th>Tool</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>GitHub</td><td>Push feature branch → PR merged to <code>main</code></td></tr>
+                <tr><td>2</td><td>Vercel CI</td><td>Automatic build triggered; <code>next build</code> runs; TypeScript checked; preview URL generated</td></tr>
+                <tr><td>3</td><td>Vercel</td><td>Production deployment on merge; global CDN distribution; zero-downtime rollout</td></tr>
+                <tr><td>4</td><td>Supabase</td><td>Schema migrations run via SQL Editor; RLS policies applied; Storage bucket created</td></tr>
+                <tr><td>5</td><td>Env vars</td><td><code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> set in Vercel dashboard</td></tr>
+                <tr><td>6</td><td>DNS</td><td>Custom domain pointed to Vercel; SSL auto-provisioned via Let's Encrypt</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Training & Support -->
+        <div class="subsection" id="training">
+          <h3 class="subsection-title">Training &amp; Support</h3>
+          <p class="subsection-sub">Training Plan</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Audience</th><th>Method</th><th>Topics</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Adopters</strong></td><td>Self-guided onboarding (no formal training)</td><td>Quiz requires no instruction — button-only flow. Profile page has inline hints on each field. First-time users see an intro screen before the quiz begins.</td></tr>
+                <tr><td><strong>Shelter Staff</strong></td><td>Written admin guide + 30-min onboarding call</td><td>Adding and editing dog listings, viewing incoming applications, updating application status, responding to applicants via shelter notes field</td></tr>
+                <tr><td><strong>Platform Team</strong></td><td>CLAUDE.md technical documentation</td><td>Repository structure, environment setup, database migrations, test suite commands, deployment process</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="subsection-sub">Maintenance Plan</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Area</th><th>Approach</th><th>Cadence</th></tr></thead>
+              <tbody>
+                <tr><td>Bug Tracking</td><td>GitHub Issues; severity-labeled (critical / high / low)</td><td>Ongoing</td></tr>
+                <tr><td>Database Backups</td><td>Automated by Supabase (daily snapshots, 7-day retention on Pro)</td><td>Daily</td></tr>
+                <tr><td>Dependency Updates</td><td><code>npm audit</code> + Dependabot alerts; major version upgrades reviewed before merging</td><td>Weekly review</td></tr>
+                <tr><td>Performance Monitoring</td><td>Vercel Analytics + Web Vitals dashboard; alert on P95 response &gt; 3s</td><td>Continuous</td></tr>
+                <tr><td>Feature Development</td><td>Iterative sprint model; next priorities: shelter dashboard, email notifications (Resend), RescueGroups API ingestion</td><td>2-week sprints</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="deliverable">
+          <div class="deliverable-icon">🚀</div>
+          <div>
+            <div class="deliverable-label">Deliverable — Phase 4</div>
+            <div class="deliverable-value">New System &amp; Maintenance Plan</div>
+            <div class="deliverable-desc">Fully deployed Next.js application with 41 passing tests, 12 navigable routes, 6 API endpoints, Supabase-backed data layer with RLS, and a defined maintenance and iteration roadmap.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>

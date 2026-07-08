@@ -81,8 +81,9 @@ export interface Application {
   user_id: string;
   dog_id: string;
   shelter_id: string;
-  profile_id: string;
+  profile_id?: string | null;
   status: ApplicationStatus;
+  applicant_notes?: string | null;
   match_score: number | null;
   shelter_notes: string | null;
   created_at: string;

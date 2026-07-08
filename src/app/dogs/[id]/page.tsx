@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
+import { ApplyButton } from "@/components/dogs/ApplyButton";
+import { FavoriteButton } from "@/components/dogs/FavoriteButton";
 import type { Dog } from "@/types";
 
 function formatFee(cents: number | null): string {
@@ -24,15 +26,35 @@ export default async function DogProfilePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: dog } = await supabase
-    .from("dogs")
-    .select("*, shelter:shelters(*)")
-    .eq("id", id)
-    .single();
+  const [{ data: dog }, { data: { user } }] = await Promise.all([
+    supabase.from("dogs").select("*, shelter:shelters(*)").eq("id", id).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!dog) notFound();
 
   const typedDog = dog as Dog;
+
+  let hasApplied = false;
+  let isFavorited = false;
+  if (user) {
+    const [{ data: existing }, { data: fav }] = await Promise.all([
+      supabase
+        .from("applications")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("dog_id", id)
+        .maybeSingle(),
+      supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("dog_id", id)
+        .maybeSingle(),
+    ]);
+    hasApplied = !!existing;
+    isFavorited = !!fav;
+  }
 
   return (
     <>
@@ -168,9 +190,19 @@ export default async function DogProfilePage({
                       </p>
                     )}
                   </div>
-                  <button className="btn-sketchy btn-primary text-lg px-8 py-4">
-                    Apply to Adopt {typedDog.name}
-                  </button>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <FavoriteButton
+                      dogId={typedDog.id}
+                      userId={user?.id ?? null}
+                      isFavorited={isFavorited}
+                    />
+                    <ApplyButton
+                      dogId={typedDog.id}
+                      dogName={typedDog.name}
+                      userId={user?.id ?? null}
+                      hasApplied={hasApplied}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

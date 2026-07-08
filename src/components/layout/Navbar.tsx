@@ -1,10 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-paper/92 backdrop-blur-sm border-b-3 border-pencil">
@@ -49,6 +73,44 @@ export function Navbar() {
           >
             Start Matching!
           </Link>
+
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-lg text-pencil hover:text-forest transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  handleSignOut();
+                }}
+                className="text-lg text-pencil hover:text-red-600 transition-colors bg-transparent border-none cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="text-lg text-pencil hover:text-forest transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Log In
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="btn-sketchy text-base px-5 py-2 bg-white hover:bg-paper-alt"
+                onClick={() => setOpen(false)}
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         <button

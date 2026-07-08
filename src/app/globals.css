@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #fdfbf7;
-  --color-paper-alt: #e8f5e9;
-  --color-pencil: #2d2d2d;
-  --color-erased: #e5e0d8;
-  --color-forest: #2d6a4f;
-  --color-forest-dark: #1b4332;
-  --color-forest-light: #40916c;
-  --color-forest-pale: #d4edda;
-  --color-warm: #d4a373;
-  --color-warm-light: #fde8d0;
+  --color-paper: #f7f1de;
+  --color-paper-alt: #ede7cc;
+  --color-pencil: #4e220f;
+  --color-erased: #ddd8c4;
+  --color-forest: #9d6638;
+  --color-forest-dark: #7a4e28;
+  --color-forest-light: #b8845a;
+  --color-forest-pale: #f0e6d8;
+  --color-warm: #b0ba99;
+  --color-warm-light: #d8dece;
 
   --font-heading: "Kalam", cursive;
   --font-body: "Patrick Hand", cursive;
 
-  --shadow-hard: 4px 4px 0px 0px #2d2d2d;
-  --shadow-hard-sm: 3px 3px 0px 0px rgba(45, 45, 45, 0.15);
-  --shadow-hard-lg: 8px 8px 0px 0px #2d2d2d;
-  --shadow-hard-hover: 2px 2px 0px 0px #2d2d2d;
-  --shadow-hard-green: 4px 4px 0px 0px #2d6a4f;
+  --shadow-hard: 4px 4px 0px 0px #4e220f;
+  --shadow-hard-sm: 3px 3px 0px 0px rgba(78, 34, 15, 0.15);
+  --shadow-hard-lg: 8px 8px 0px 0px #4e220f;
+  --shadow-hard-hover: 2px 2px 0px 0px #4e220f;
+  --shadow-hard-green: 4px 4px 0px 0px #9d6638;
 }
 
 @layer base {
@@ -90,4 +90,54 @@
   .wobbly-4 { border-radius: 255px 20px 225px 20px / 20px 225px 20px 255px; }
   .blob-1 { border-radius: 68% 32% 55% 45% / 40% 60% 40% 60%; }
   .blob-2 { border-radius: 40% 60% 35% 65% / 55% 45% 55% 45%; }
+
+  /* Tape strips */
+  .tape {
+    position: relative;
+    display: inline-block;
+    height: 28px;
+    background: rgba(200, 210, 200, 0.45);
+    backdrop-filter: blur(1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .tape::before,
+  .tape::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    background: inherit;
+  }
+  /* torn left edge */
+  .tape::before {
+    left: -6px;
+    clip-path: polygon(6px 0%, 10px 15%, 6px 30%, 10px 45%, 6px 60%, 10px 75%, 6px 90%, 10px 100%, 0% 100%, 0% 0%);
+  }
+  /* torn right edge */
+  .tape::after {
+    right: -6px;
+    clip-path: polygon(0% 0%, 10px 0%, 10px 100%, 0% 100%, 4px 85%, 0% 70%, 4px 55%, 0% 40%, 4px 25%, 0% 10%);
+  }
+
+  .tape-wide {
+    height: 32px;
+    background: rgba(195, 208, 195, 0.40);
+  }
+  .tape-warm {
+    background: rgba(232, 160, 124, 0.35);
+  }
+  .tape-sage {
+    background: rgba(165, 175, 121, 0.40);
+  }
+  /* crinkle lines overlay */
+  .tape-crinkle::before {
+    background-image: repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 8px,
+      rgba(255,255,255,0.25) 8px,
+      rgba(255,255,255,0.25) 9px
+    );
+  }
 }

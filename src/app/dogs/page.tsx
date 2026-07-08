@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { DogCard } from "@/components/dogs/DogCard";
+import { FavoriteButton } from "@/components/dogs/FavoriteButton";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import type { Dog } from "@/types";
@@ -12,14 +13,28 @@ export const metadata = {
 
 export default async function DogsPage() {
   const supabase = await createClient();
-  const { data: dogs } = await supabase
-    .from("dogs")
-    .select("*, shelter:shelters(id, name, city, state)")
-    .eq("status", "available")
-    .order("created_at", { ascending: false })
-    .limit(24);
+
+  const [{ data: dogs }, { data: { user } }] = await Promise.all([
+    supabase
+      .from("dogs")
+      .select("*, shelter:shelters(id, name, city, state)")
+      .eq("status", "available")
+      .order("created_at", { ascending: false })
+      .limit(24),
+    supabase.auth.getUser(),
+  ]);
 
   const typedDogs = (dogs ?? []) as Dog[];
+
+  // Fetch which dogs this user has favorited
+  let favoritedIds = new Set<string>();
+  if (user) {
+    const { data: favs } = await supabase
+      .from("favorites")
+      .select("dog_id")
+      .eq("user_id", user.id);
+    favoritedIds = new Set((favs ?? []).map((f) => f.dog_id as string));
+  }
 
   return (
     <>
@@ -50,7 +65,19 @@ export default async function DogsPage() {
           {typedDogs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {typedDogs.map((dog, i) => (
-                <DogCard key={dog.id} dog={dog} index={i} />
+                <DogCard
+                  key={dog.id}
+                  dog={dog}
+                  index={i}
+                  headerAction={
+                    <FavoriteButton
+                      dogId={dog.id}
+                      userId={user?.id ?? null}
+                      isFavorited={favoritedIds.has(dog.id)}
+                      size="sm"
+                    />
+                  }
+                />
               ))}
             </div>
           ) : (

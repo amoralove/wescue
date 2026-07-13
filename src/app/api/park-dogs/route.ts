@@ -35,7 +35,7 @@ export async function GET() {
       breed: dog.breed_primary ?? "Mixed breed",
       age: ageLabel(dog.age_years, dog.age_months),
       emoji: emojiForDog(dog.breed_primary, dog.size),
-      shelter: (dog.shelter as { name: string } | null)?.name ?? "Local Rescue",
+      shelter: (dog.shelter as unknown as { name: string } | null)?.name ?? "Local Rescue",
       bio: dog.personality ?? "This pup is still writing their bio.",
       url: `/dogs/${dog.id}`,
     }));

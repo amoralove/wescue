@@ -557,28 +557,75 @@ canvas.addEventListener("click", (event) => {
   if (obj) onDogClick(obj.userData.dogId, obj);
 });
 
-// --- Dog info modal ---
+// --- Dog info modal with carousel ---
 const dogModalOverlay = document.getElementById("dogModalOverlay");
+const cardPhoto = document.getElementById("cardPhoto");
 const cardAvatar = document.getElementById("cardAvatar");
+const cardCounter = document.getElementById("cardCounter");
 const cardName = document.getElementById("cardName");
 const cardMeta = document.getElementById("cardMeta");
 const cardBio = document.getElementById("cardBio");
 const cardShelter = document.getElementById("cardShelter");
 const cardAdoptLink = document.getElementById("cardAdoptLink");
 const petBtn = document.getElementById("petBtn");
+const modalPrev = document.getElementById("modalPrev");
+const modalNext = document.getElementById("modalNext");
 
-function onDogClick(id, worldObj) {
-  const dog = dogs.find((d) => d.id === id);
+let currentModalIndex = -1;
+
+function updateModalContent() {
+  const dog = dogs[currentModalIndex];
   if (!dog) return;
-  cardAvatar.textContent = dog.emoji;
+
+  // Show real photo if available, else emoji fallback
+  if (dog.photo) {
+    cardPhoto.innerHTML = `<img src="${dog.photo}" alt="${dog.name}">`;
+    cardPhoto.style.display = "block";
+    cardAvatar.style.display = "none";
+  } else {
+    cardPhoto.style.display = "none";
+    cardAvatar.textContent = dog.emoji;
+    cardAvatar.style.display = "block";
+  }
+
+  cardCounter.textContent = `${currentModalIndex + 1} of ${dogs.length}`;
   cardName.textContent = dog.name;
   cardMeta.textContent = `${dog.breed} · ${dog.age}`;
-  cardBio.textContent = dog.bio || "This good boy/girl is still writing their bio.";
+  cardBio.textContent = dog.bio || "This good pup is still writing their bio.";
   cardShelter.textContent = dog.shelter;
-  cardAdoptLink.href = dog.url && dog.url.trim() ? dog.url : "https://wescue.com";
-  dogModalOverlay.classList.add("open");
-  spawnHeart(worldObj);
+  cardAdoptLink.href = dog.url && dog.url.trim() ? dog.url : "/dogs";
+
+  modalPrev.disabled = currentModalIndex === 0;
+  modalNext.disabled = currentModalIndex === dogs.length - 1;
 }
+
+function openDogModal(index, worldObj) {
+  currentModalIndex = Math.max(0, Math.min(index, dogs.length - 1));
+  updateModalContent();
+  dogModalOverlay.classList.add("open");
+  if (worldObj) spawnHeart(worldObj);
+}
+
+function onDogClick(id, worldObj) {
+  const index = dogs.findIndex((d) => d.id === id);
+  if (index === -1) return;
+  openDogModal(index, worldObj);
+}
+
+modalPrev.addEventListener("click", () => {
+  if (currentModalIndex > 0) { currentModalIndex--; updateModalContent(); }
+});
+
+modalNext.addEventListener("click", () => {
+  if (currentModalIndex < dogs.length - 1) { currentModalIndex++; updateModalContent(); }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!dogModalOverlay.classList.contains("open")) return;
+  if (e.key === "ArrowLeft" && currentModalIndex > 0) { currentModalIndex--; updateModalContent(); }
+  else if (e.key === "ArrowRight" && currentModalIndex < dogs.length - 1) { currentModalIndex++; updateModalContent(); }
+  else if (e.key === "Escape") { dogModalOverlay.classList.remove("open"); }
+});
 
 function spawnHeart(worldObj) {
   const worldPos = new THREE.Vector3();

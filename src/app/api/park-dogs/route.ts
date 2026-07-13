@@ -23,7 +23,7 @@ export async function GET() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("dogs")
-      .select("id, name, breed_primary, age_years, age_months, size, personality, shelter:shelters(name)")
+      .select("id, name, breed_primary, age_years, age_months, size, personality, photos, shelter:shelters(name)")
       .eq("status", "available")
       .limit(30);
 
@@ -38,6 +38,7 @@ export async function GET() {
       shelter: (dog.shelter as unknown as { name: string } | null)?.name ?? "Local Rescue",
       bio: dog.personality ?? "This pup is still writing their bio.",
       url: `/dogs/${dog.id}`,
+      photo: ((dog.photos as string[] | null)?.[0]) ?? null,
     }));
 
     return NextResponse.json({ dogs }, {

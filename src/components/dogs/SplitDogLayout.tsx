@@ -140,140 +140,134 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
     <>
       {/* ── Main split layout ── */}
       <div
-        className="fixed flex flex-col md:flex-row"
+        className="fixed flex flex-col md:flex-row overflow-hidden"
         style={{ top: 72, left: 0, right: 0, bottom: 0 }}
       >
-        {/* Left sidebar */}
-        <aside
-          className="flex flex-col min-h-0 overflow-hidden bg-paper border-b-[3px] md:border-b-0 md:border-r-[3px] border-pencil"
-          style={{ flex: "1 1 auto" }}
-        >
-          <style>{`@media(min-width:768px){.dog-sidebar-inner{flex:0 0 340px!important;max-width:340px}}`}</style>
-          <div className="dog-sidebar-inner flex flex-col min-h-0 overflow-hidden" style={{ flex: "1 1 auto" }}>
+        {/* ── Left sidebar ── */}
+        <aside className="flex flex-col flex-1 md:flex-none md:w-[340px] min-h-0 bg-paper border-b-[3px] md:border-b-0 md:border-r-[3px] border-pencil overflow-hidden">
 
-            {/* Search + filter header */}
-            <div className="p-3 border-b-[2px] border-pencil/20 flex-shrink-0 space-y-2">
-              <div className="flex gap-2">
-                <div className="flex-1 relative flex items-center">
-                  <span className="absolute left-3 text-sm pointer-events-none opacity-40">🔍</span>
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Name or breed…"
-                    className="w-full pl-8 pr-3 py-2 rounded-full border-2 border-pencil/30 bg-white text-sm focus:outline-none focus:border-pencil transition-colors"
-                  />
-                </div>
-
-                <div ref={filterRef} className="relative shrink-0">
-                  <button
-                    onClick={() => setFilterOpen((o) => !o)}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 text-sm font-bold transition-colors bg-white ${
-                      filterCount > 0 ? "border-forest text-forest" : "border-pencil/30 text-pencil"
-                    }`}
-                  >
-                    Filters
-                    {filterCount > 0 && (
-                      <span className="bg-forest text-white text-xs px-1.5 py-px rounded-full leading-none">
-                        {filterCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {filterOpen && (
-                    <div className="absolute right-0 top-full mt-1.5 bg-paper border-2 border-pencil rounded-2xl p-4 w-52 shadow-hard z-40">
-                      <div className="flex items-center justify-between mb-3">
-                        <strong className="text-sm font-heading">Filters</strong>
-                        {hasFilter && (
-                          <button
-                            onClick={() => { clearFilters(); setFilterOpen(false); }}
-                            className="text-xs text-forest font-bold hover:underline"
-                          >
-                            Clear all
-                          </button>
-                        )}
-                      </div>
-
-                      <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mb-1">Size</p>
-                      {SIZE_OPTIONS.map(([v, l]) => (
-                        <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
-                          <input type="checkbox" checked={sizes.has(v)} onChange={() => setSizes(toggle(sizes, v))} className="accent-forest w-3.5 h-3.5" />
-                          {l}
-                        </label>
-                      ))}
-
-                      <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mt-3 mb-1">Energy</p>
-                      {ENERGY_OPTIONS.map(([v, l]) => (
-                        <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
-                          <input type="checkbox" checked={energies.has(v)} onChange={() => setEnergies(toggle(energies, v))} className="accent-forest w-3.5 h-3.5" />
-                          {l}
-                        </label>
-                      ))}
-
-                      <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mt-3 mb-1">Good With</p>
-                      {GOODWITH_OPTIONS.map(([v, l]) => (
-                        <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
-                          <input type="checkbox" checked={goodWith.has(v)} onChange={() => setGoodWith(toggle(goodWith, v))} className="accent-forest w-3.5 h-3.5" />
-                          {l}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+          {/* Search + filter header */}
+          <div className="p-3 border-b-[2px] border-pencil/20 flex-shrink-0 space-y-2">
+            <div className="flex gap-2">
+              <div className="flex-1 relative flex items-center">
+                <span className="absolute left-3 text-sm pointer-events-none opacity-40">🔍</span>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Name or breed…"
+                  className="w-full pl-8 pr-3 py-2 rounded-full border-2 border-pencil/30 bg-white text-sm focus:outline-none focus:border-pencil transition-colors"
+                />
               </div>
 
-              <p className="text-xs text-pencil/50">
-                <span className="font-bold text-forest">{filtered.length}</span>{" "}
-                dog{filtered.length !== 1 ? "s" : ""} available
-                {hasFilter && dogs.length !== filtered.length ? ` of ${dogs.length}` : ""}
-              </p>
-            </div>
+              <div ref={filterRef} className="relative shrink-0">
+                <button
+                  onClick={() => setFilterOpen((o) => !o)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full border-2 text-sm font-bold transition-colors bg-white ${
+                    filterCount > 0 ? "border-forest text-forest" : "border-pencil/30 text-pencil"
+                  }`}
+                >
+                  Filters
+                  {filterCount > 0 && (
+                    <span className="bg-forest text-white text-xs px-1.5 py-px rounded-full leading-none">
+                      {filterCount}
+                    </span>
+                  )}
+                </button>
 
-            {/* Scrollable dog list */}
-            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
-              {filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full p-8 text-center text-pencil/50">
-                  <span className="text-4xl mb-3">🔍</span>
-                  <p className="font-heading font-bold mb-1">No matches</p>
-                  <p className="text-sm mb-4">Try adjusting your filters.</p>
-                  <button onClick={clearFilters} className="btn-sketchy btn-primary !text-sm !px-5 !py-2">
-                    Clear filters
-                  </button>
-                </div>
-              ) : (
-                filtered.map((dog, i) => (
-                  <button
-                    key={dog.id}
-                    onClick={() => { setModalIndex(i); setSelectedDog(dog); }}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 border-b border-pencil/10 hover:bg-paper-alt transition-colors text-left"
-                  >
-                    <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-pencil/15 flex-shrink-0 bg-forest-pale flex items-center justify-center">
-                      {dog.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={dog.photo} alt={dog.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-2xl">{dog.emoji}</span>
+                {filterOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 bg-paper border-2 border-pencil rounded-2xl p-4 w-52 shadow-hard z-40">
+                    <div className="flex items-center justify-between mb-3">
+                      <strong className="text-sm font-heading">Filters</strong>
+                      {hasFilter && (
+                        <button
+                          onClick={() => { clearFilters(); setFilterOpen(false); }}
+                          className="text-xs text-forest font-bold hover:underline"
+                        >
+                          Clear all
+                        </button>
                       )}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-pencil leading-tight">{dog.name}</p>
-                      <p className="text-xs text-pencil/50 truncate mt-0.5">{dog.breed} · {dog.age}</p>
-                      {dog.feeCents ? (
-                        <p className="text-xs font-bold text-forest mt-0.5">${Math.round(dog.feeCents / 100)}</p>
-                      ) : null}
-                    </div>
+                    <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mb-1">Size</p>
+                    {SIZE_OPTIONS.map(([v, l]) => (
+                      <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
+                        <input type="checkbox" checked={sizes.has(v)} onChange={() => setSizes(toggle(sizes, v))} className="accent-forest w-3.5 h-3.5" />
+                        {l}
+                      </label>
+                    ))}
 
-                    <span className="text-pencil/25 text-xl flex-shrink-0">›</span>
-                  </button>
-                ))
-              )}
+                    <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mt-3 mb-1">Energy</p>
+                    {ENERGY_OPTIONS.map(([v, l]) => (
+                      <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
+                        <input type="checkbox" checked={energies.has(v)} onChange={() => setEnergies(toggle(energies, v))} className="accent-forest w-3.5 h-3.5" />
+                        {l}
+                      </label>
+                    ))}
+
+                    <p className="text-[0.62rem] font-bold uppercase tracking-wider opacity-40 mt-3 mb-1">Good With</p>
+                    {GOODWITH_OPTIONS.map(([v, l]) => (
+                      <label key={v} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
+                        <input type="checkbox" checked={goodWith.has(v)} onChange={() => setGoodWith(toggle(goodWith, v))} className="accent-forest w-3.5 h-3.5" />
+                        {l}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
+
+            <p className="text-xs text-pencil/50">
+              <span className="font-bold text-forest">{filtered.length}</span>{" "}
+              dog{filtered.length !== 1 ? "s" : ""} available
+              {hasFilter && dogs.length !== filtered.length ? ` of ${dogs.length}` : ""}
+            </p>
+          </div>
+
+          {/* Scrollable dog list */}
+          <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center text-pencil/50">
+                <span className="text-4xl mb-3">🔍</span>
+                <p className="font-heading font-bold mb-1">No matches</p>
+                <p className="text-sm mb-4">Try adjusting your filters.</p>
+                <button onClick={clearFilters} className="btn-sketchy btn-primary !text-sm !px-5 !py-2">
+                  Clear filters
+                </button>
+              </div>
+            ) : (
+              filtered.map((dog, i) => (
+                <button
+                  key={dog.id}
+                  onClick={() => { setModalIndex(i); setSelectedDog(dog); }}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 border-b border-pencil/10 hover:bg-paper-alt transition-colors text-left"
+                >
+                  <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-pencil/15 flex-shrink-0 bg-forest-pale flex items-center justify-center">
+                    {dog.photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={dog.photo} alt={dog.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">{dog.emoji}</span>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-pencil leading-tight">{dog.name}</p>
+                    <p className="text-xs text-pencil/50 truncate mt-0.5">{dog.breed} · {dog.age}</p>
+                    {dog.feeCents ? (
+                      <p className="text-xs font-bold text-forest mt-0.5">${Math.round(dog.feeCents / 100)}</p>
+                    ) : null}
+                  </div>
+
+                  <span className="text-pencil/25 text-xl flex-shrink-0">›</span>
+                </button>
+              ))
+            )}
           </div>
         </aside>
 
-        {/* Right panel: 3D park */}
-        <div className="hidden md:block flex-1 relative overflow-hidden">
+        {/* ── Right panel: 3D park ── */}
+        <div className="hidden md:block flex-1 min-h-0 relative overflow-hidden">
           <iframe
             ref={iframeRef}
             src="/park/index.html"

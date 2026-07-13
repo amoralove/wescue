@@ -7,9 +7,10 @@ interface Props {
   userId: string | null;
   isFavorited: boolean;
   size?: "sm" | "md";
+  onToggle?: (dogId: string, isFavorited: boolean) => void;
 }
 
-export function FavoriteButton({ dogId, userId, isFavorited: initial, size = "md" }: Props) {
+export function FavoriteButton({ dogId, userId, isFavorited: initial, size = "md", onToggle }: Props) {
   const [favorited, setFavorited] = useState(initial);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +31,8 @@ export function FavoriteButton({ dogId, userId, isFavorited: initial, size = "md
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dog_id: dogId }),
       });
-      if (!res.ok) setFavorited(prev); // revert on error
+      if (!res.ok) { setFavorited(prev); }
+      else { onToggle?.(dogId, !prev); }
     } catch {
       setFavorited(prev);
     } finally {

@@ -9,6 +9,7 @@
   --accent-dark: #e56f1f;
   --pond: #7fd0e8;
   --forest: #2d6a4f;
+  --border: #c2b99a;
 }
 
 * { box-sizing: border-box; }
@@ -27,66 +28,168 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 20px;
+  padding: 12px 20px;
   background: #ffffffcc;
   backdrop-filter: blur(6px);
   border-bottom: 3px solid var(--wood);
   position: sticky;
   top: 0;
+  z-index: 30;
+  flex-wrap: wrap;
+}
+
+.brand { font-size: 1.2rem; font-weight: 800; }
+.stats { font-size: 0.85rem; color: #55503f; }
+.stats span { font-weight: 700; color: var(--accent-dark); }
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 48px;
   z-index: 20;
   flex-wrap: wrap;
 }
 
-.brand { font-size: 1.3rem; font-weight: 800; }
+.search-wrap {
+  flex: 1;
+  min-width: 150px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
-.stats { font-size: 0.9rem; color: #55503f; }
-.stats span { font-weight: 700; color: var(--accent-dark); }
+.search-icon {
+  position: absolute;
+  left: 11px;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
 
-/* ── Buttons ── */
-.primary-btn {
+.search-wrap input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  border: 2.5px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  background: white;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-wrap input:focus { border-color: var(--forest); }
+
+/* Filter dropdown */
+.filter-wrap { position: relative; }
+
+.filter-btn {
+  background: var(--card-bg);
+  border: 2.5px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: border-color 0.15s;
+}
+
+.filter-btn:hover,
+.filter-btn.active { border-color: var(--forest); color: var(--forest); }
+
+.filter-badge {
   background: var(--forest);
   color: white;
-  border: 3px solid #1a4d38;
-  padding: 10px 18px;
   border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 #1a4d38;
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-  text-decoration: none;
-  display: inline-block;
+  padding: 1px 7px;
+  display: none;
 }
 
-.primary-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 #1a4d38;
-}
+.filter-badge.visible { display: inline; }
 
-.secondary-btn {
+.filter-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
   background: var(--card-bg);
-  color: var(--ink);
-  border: 3px solid var(--wood);
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 var(--wood);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  border: 2.5px solid var(--wood);
+  border-radius: 14px;
+  padding: 14px 16px;
+  width: 230px;
+  box-shadow: 4px 4px 0 var(--wood);
+  z-index: 40;
+  display: none;
 }
 
-.secondary-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--wood);
+.filter-panel.open { display: block; }
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: var(--forest);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: none;
+}
+
+.clear-btn.visible { display: inline; }
+
+.filter-group { margin-bottom: 12px; }
+.filter-group:last-child { margin-bottom: 0; }
+
+.filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  opacity: 0.5;
+  margin: 0 0 5px;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.filter-group input[type="checkbox"] {
+  accent-color: var(--forest);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
 }
 
 /* ── Park canvas ── */
 .hint {
   text-align: center;
   color: #4b4636;
-  font-size: 0.85rem;
-  margin: 10px auto 18px;
+  font-size: 0.82rem;
+  margin: 8px auto 14px;
   max-width: 520px;
   padding: 0 16px;
 }
@@ -95,7 +198,7 @@ body {
   position: relative;
   margin: 0 auto;
   width: min(94vw, 1000px);
-  height: 480px;
+  height: 440px;
   background: #6cb843;
   border: 8px solid var(--wood);
   border-radius: 18px;
@@ -141,7 +244,6 @@ body {
 
 .modal-overlay.open { display: flex; }
 
-/* Side nav arrows */
 .modal-nav-btn {
   background: var(--card-bg);
   border: 3px solid var(--wood);
@@ -170,12 +272,9 @@ body {
   box-shadow: 1px 1px 0 var(--wood);
 }
 
-.modal-nav-btn:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-}
+.modal-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
-/* ── Dog card modal ── */
+/* ── Dog card ── */
 .modal {
   background: var(--card-bg);
   border: 3px solid var(--wood);
@@ -204,7 +303,6 @@ body {
 
 .close-btn:hover { color: var(--ink); }
 
-/* Real photo area */
 .dog-card-photo {
   width: 100%;
   height: 220px;
@@ -221,7 +319,6 @@ body {
   display: block;
 }
 
-/* Emoji fallback */
 .dog-card-avatar {
   font-size: 5rem;
   text-align: center;
@@ -229,11 +326,7 @@ body {
   display: none;
 }
 
-/* Card content */
-.dog-card-body {
-  padding: 18px 22px 22px;
-  text-align: center;
-}
+.dog-card-body { padding: 18px 22px 22px; text-align: center; }
 
 .dog-card-counter {
   font-size: 0.72rem;
@@ -244,39 +337,47 @@ body {
   margin: 0 0 6px;
 }
 
-.dog-card h2 {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin: 0 0 4px;
-}
+.dog-card h2 { font-size: 1.6rem; font-weight: 800; margin: 0 0 4px; }
+.dog-card-meta { color: #77715c; font-weight: 600; font-size: 0.9rem; margin: 0 0 10px; }
+.dog-card-bio { font-style: italic; color: #4b4636; font-size: 0.9rem; line-height: 1.5; margin: 0 0 8px; }
+.dog-card-shelter { font-size: 0.82rem; color: #55503f; margin: 0 0 16px; }
 
-.dog-card-meta {
-  color: #77715c;
-  font-weight: 600;
+.dog-card-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Buttons ── */
+.primary-btn {
+  background: var(--forest);
+  color: white;
+  border: 3px solid #1a4d38;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 0.9rem;
-  margin: 0 0 10px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #1a4d38;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  text-decoration: none;
+  display: inline-block;
+  font-family: inherit;
 }
 
-.dog-card-bio {
-  font-style: italic;
-  color: #4b4636;
+.primary-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #1a4d38; }
+
+.secondary-btn {
+  background: var(--card-bg);
+  color: var(--ink);
+  border: 3px solid var(--wood);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 0 0 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--wood);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  font-family: inherit;
 }
 
-.dog-card-shelter {
-  font-size: 0.82rem;
-  color: #55503f;
-  margin: 0 0 16px;
-}
-
-.dog-card-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+.secondary-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--wood); }
 
 /* ── Toast ── */
 .toast {
@@ -296,16 +397,14 @@ body {
   z-index: 60;
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .park { height: 360px; }
+  .park { height: 340px; }
   .topbar { justify-content: center; text-align: center; }
   .modal-nav-btn { width: 40px; height: 40px; font-size: 1.1rem; }
   .modal-overlay { padding: 12px 8px; gap: 8px; }
   .dog-card-photo { height: 180px; }
+  .filter-bar { top: 44px; }
 }

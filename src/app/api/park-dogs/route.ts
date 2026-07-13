@@ -23,9 +23,9 @@ export async function GET() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("dogs")
-      .select("id, name, breed_primary, age_years, age_months, size, personality, photos, shelter:shelters(name)")
+      .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, personality, photos, shelter:shelters(name)")
       .eq("status", "available")
-      .limit(30);
+      .limit(50);
 
     if (error) throw error;
 
@@ -39,6 +39,11 @@ export async function GET() {
       bio: dog.personality ?? "This pup is still writing their bio.",
       url: `/dogs/${dog.id}`,
       photo: ((dog.photos as string[] | null)?.[0]) ?? null,
+      size: dog.size ?? "medium",
+      energy: dog.energy_level ?? null,
+      goodWithKids: dog.good_with_kids ?? null,
+      goodWithDogs: dog.good_with_dogs ?? null,
+      goodWithCats: dog.good_with_cats ?? null,
     }));
 
     return NextResponse.json({ dogs }, {

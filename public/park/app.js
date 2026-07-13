@@ -96,6 +96,13 @@ const toast = document.getElementById("toast");
 let dogs = [];
 let petCount = Number(localStorage.getItem(PET_KEY) || 0);
 
+// Filter state — updated by the filter bar UI
+let filterQuery = '';
+let filterSizes = new Set();
+let filterEnergies = new Set();
+let filterGoodWith = new Set();
+let visibleDogs = []; // subset of dogs that pass current filter
+
 async function fetchDogs() {
   try {
     const res = await fetch("/api/park-dogs");
@@ -538,7 +545,47 @@ function renderAllDogs() {
   dogsGroup.clear();
   entities.clear();
   dogs.forEach((dog) => spawnEntity(dog));
+  visibleDogs = [...dogs];
   updateCounts();
+}
+
+function matchesDogFilter(dog) {
+  const q = filterQuery.trim().toLowerCase();
+  if (q && !dog.name.toLowerCase().includes(q) && !dog.breed.toLowerCase().includes(q)) return false;
+  if (filterSizes.size && !filterSizes.has(dog.size)) return false;
+  if (filterEnergies.size && !filterEnergies.has(dog.energy)) return false;
+  if (filterGoodWith.has('kids') && dog.goodWithKids === false) return false;
+  if (filterGoodWith.has('dogs') && dog.goodWithDogs === false) return false;
+  if (filterGoodWith.has('cats') && dog.goodWithCats === false) return false;
+  return true;
+}
+
+function applyFilter() {
+  visibleDogs = dogs.filter(matchesDogFilter);
+
+  // Show/hide 3D dog entities based on filter
+  for (const [id, entity] of entities) {
+    entity.model.root.visible = visibleDogs.some((d) => d.id === id);
+  }
+
+  dogCountEl.textContent = visibleDogs.length;
+
+  // Update filter badge + clear button
+  const activeCount = filterSizes.size + filterEnergies.size + filterGoodWith.size + (filterQuery.trim() ? 1 : 0);
+  const badge = document.getElementById('filterBadge');
+  const clearBtn = document.getElementById('clearFilters');
+  const filterBtn = document.getElementById('filterToggle');
+
+  if (activeCount > 0) {
+    badge.textContent = activeCount;
+    badge.classList.add('visible');
+    clearBtn.classList.add('visible');
+    filterBtn.classList.add('active');
+  } else {
+    badge.classList.remove('visible');
+    clearBtn.classList.remove('visible');
+    filterBtn.classList.remove('active');
+  }
 }
 
 // --- Raycasting for clicks ---
@@ -574,10 +621,9 @@ const modalNext = document.getElementById("modalNext");
 let currentModalIndex = -1;
 
 function updateModalContent() {
-  const dog = dogs[currentModalIndex];
+  const dog = visibleDogs[currentModalIndex];
   if (!dog) return;
 
-  // Show real photo if available, else emoji fallback
   if (dog.photo) {
     cardPhoto.innerHTML = `<img src="${dog.photo}" alt="${dog.name}">`;
     cardPhoto.style.display = "block";
@@ -588,7 +634,7 @@ function updateModalContent() {
     cardAvatar.style.display = "block";
   }
 
-  cardCounter.textContent = `${currentModalIndex + 1} of ${dogs.length}`;
+  cardCounter.textContent = `${currentModalIndex + 1} of ${visibleDogs.length}`;
   cardName.textContent = dog.name;
   cardMeta.textContent = `${dog.breed} · ${dog.age}`;
   cardBio.textContent = dog.bio || "This good pup is still writing their bio.";
@@ -596,18 +642,19 @@ function updateModalContent() {
   cardAdoptLink.href = dog.url && dog.url.trim() ? dog.url : "/dogs";
 
   modalPrev.disabled = currentModalIndex === 0;
-  modalNext.disabled = currentModalIndex === dogs.length - 1;
+  modalNext.disabled = currentModalIndex === visibleDogs.length - 1;
 }
 
 function openDogModal(index, worldObj) {
-  currentModalIndex = Math.max(0, Math.min(index, dogs.length - 1));
+  currentModalIndex = Math.max(0, Math.min(index, visibleDogs.length - 1));
   updateModalContent();
   dogModalOverlay.classList.add("open");
   if (worldObj) spawnHeart(worldObj);
 }
 
 function onDogClick(id, worldObj) {
-  const index = dogs.findIndex((d) => d.id === id);
+  // Only open if this dog passes the current filter
+  const index = visibleDogs.findIndex((d) => d.id === id);
   if (index === -1) return;
   openDogModal(index, worldObj);
 }
@@ -617,14 +664,61 @@ modalPrev.addEventListener("click", () => {
 });
 
 modalNext.addEventListener("click", () => {
-  if (currentModalIndex < dogs.length - 1) { currentModalIndex++; updateModalContent(); }
+  if (currentModalIndex < visibleDogs.length - 1) { currentModalIndex++; updateModalContent(); }
 });
 
 document.addEventListener("keydown", (e) => {
   if (!dogModalOverlay.classList.contains("open")) return;
   if (e.key === "ArrowLeft" && currentModalIndex > 0) { currentModalIndex--; updateModalContent(); }
-  else if (e.key === "ArrowRight" && currentModalIndex < dogs.length - 1) { currentModalIndex++; updateModalContent(); }
+  else if (e.key === "ArrowRight" && currentModalIndex < visibleDogs.length - 1) { currentModalIndex++; updateModalContent(); }
   else if (e.key === "Escape") { dogModalOverlay.classList.remove("open"); }
+});
+
+// ── Filter bar event listeners ──
+const parkSearch = document.getElementById('parkSearch');
+const filterToggle = document.getElementById('filterToggle');
+const filterPanel = document.getElementById('filterPanel');
+const filterWrap = document.getElementById('filterWrap');
+const clearFiltersBtn = document.getElementById('clearFilters');
+
+parkSearch.addEventListener('input', () => {
+  filterQuery = parkSearch.value;
+  applyFilter();
+});
+
+filterToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterPanel.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!filterWrap.contains(e.target)) filterPanel.classList.remove('open');
+});
+
+document.querySelectorAll('[data-filter]').forEach((cb) => {
+  cb.addEventListener('change', () => {
+    const group = cb.dataset.filter;
+    const val = cb.value;
+    if (group === 'size') {
+      cb.checked ? filterSizes.add(val) : filterSizes.delete(val);
+    } else if (group === 'energy') {
+      cb.checked ? filterEnergies.add(val) : filterEnergies.delete(val);
+    } else if (group === 'goodWith') {
+      cb.checked ? filterGoodWith.add(val) : filterGoodWith.delete(val);
+    }
+    applyFilter();
+  });
+});
+
+clearFiltersBtn.addEventListener('click', () => {
+  filterQuery = '';
+  filterSizes = new Set();
+  filterEnergies = new Set();
+  filterGoodWith = new Set();
+  parkSearch.value = '';
+  document.querySelectorAll('[data-filter]').forEach((cb) => cb.checked = false);
+  filterPanel.classList.remove('open');
+  applyFilter();
 });
 
 function spawnHeart(worldObj) {

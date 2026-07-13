@@ -77,18 +77,6 @@ export function DogBrowser({ dogs, userId, favoritedIds: initialFavIds }: Props)
     return () => document.removeEventListener("mousedown", onDown);
   }, [filterOpen]);
 
-  // Arrow key navigation
-  useEffect(() => {
-    const len = filtered.length;
-    function onKey(e: KeyboardEvent) {
-      if (e.target instanceof HTMLInputElement) return;
-      if (e.key === "ArrowRight") setIndex((i) => Math.min(len - 1, i + 1));
-      if (e.key === "ArrowLeft") setIndex((i) => Math.max(0, i - 1));
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [filtered.length]);
-
   function toggle<T>(set: Set<T>, val: T): Set<T> {
     const next = new Set(set);
     next.has(val) ? next.delete(val) : next.add(val);
@@ -120,6 +108,18 @@ export function DogBrowser({ dogs, userId, favoritedIds: initialFavIds }: Props)
 
   const prev = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
   const next = useCallback(() => setIndex((i) => Math.min(filtered.length - 1, i + 1)), [filtered.length]);
+
+  // Arrow key navigation — placed after filtered is defined
+  useEffect(() => {
+    const len = filtered.length;
+    function onKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement) return;
+      if (e.key === "ArrowRight") setIndex((i) => Math.min(len - 1, i + 1));
+      if (e.key === "ArrowLeft") setIndex((i) => Math.max(0, i - 1));
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [filtered.length]);
 
   const filterCount =
     sizes.size + energies.size + ages.size +

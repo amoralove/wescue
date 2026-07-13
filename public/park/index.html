@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wescue Dog Park</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">🐾 Wescue Dog Park</div>
+    <div class="stats">
+      <span id="dogCount">0</span> dogs playing &middot;
+      <span id="petCount">0</span> pets given today
+    </div>
+  </header>
+
+  <main class="park" id="park">
+    <canvas id="parkCanvas"></canvas>
+    <!-- floating hearts get injected here, positioned above the 3D dogs -->
+  </main>
+
+  <p class="hint">Every dog here is a real rescue available on Wescue. Click one to say hi and meet them.</p>
+
+  <!-- Dog info card -->
+  <div class="modal-overlay" id="dogModalOverlay">
+    <div class="modal dog-card">
+      <button class="close-btn" data-close>&times;</button>
+      <div class="dog-card-avatar" id="cardAvatar"></div>
+      <h2 id="cardName"></h2>
+      <p class="dog-card-meta" id="cardMeta"></p>
+      <p class="dog-card-bio" id="cardBio"></p>
+      <p class="dog-card-shelter">📍 <span id="cardShelter"></span></p>
+      <div class="dog-card-actions">
+        <button class="primary-btn" id="petBtn">🖐️ Pet</button>
+        <a class="primary-btn adopt-btn" id="cardAdoptLink" target="_top" rel="noopener">🏡 Meet on Wescue</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

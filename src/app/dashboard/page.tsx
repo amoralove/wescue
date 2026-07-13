@@ -86,8 +86,22 @@ export default async function DashboardPage() {
               </p>
             </Link>
 
+            {/* Dog Park */}
+            <Link
+              href="/dog-park"
+              className="card-sketchy p-6 hover:shadow-hard-lg transition-shadow wobbly-1 group"
+            >
+              <span className="text-4xl block mb-3">&#x1f3de;&#xfe0f;</span>
+              <h2 className="font-heading text-xl font-bold mb-1 group-hover:text-forest">
+                Dog Park
+              </h2>
+              <p className="text-sm opacity-60">
+                Watch real rescue dogs roam around. Click one to meet them.
+              </p>
+            </Link>
+
             {/* Messages */}
-            <div className="card-sketchy p-6 wobbly-1 opacity-60">
+            <div className="card-sketchy p-6 wobbly-2 opacity-60">
               <span className="text-4xl block mb-3">&#x1f4e8;</span>
               <h2 className="font-heading text-xl font-bold mb-1">
                 Messages

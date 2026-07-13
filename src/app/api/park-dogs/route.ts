@@ -23,7 +23,7 @@ export async function GET() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("dogs")
-      .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, personality, photos, shelter:shelters(name)")
+      .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, shelter:shelters(name, city, state)")
       .eq("status", "available")
       .limit(50);
 
@@ -35,7 +35,9 @@ export async function GET() {
       breed: dog.breed_primary ?? "Mixed breed",
       age: ageLabel(dog.age_years, dog.age_months),
       emoji: emojiForDog(dog.breed_primary, dog.size),
-      shelter: (dog.shelter as unknown as { name: string } | null)?.name ?? "Local Rescue",
+      shelter: (dog.shelter as unknown as { name: string; city: string | null; state: string | null } | null)?.name ?? "Local Rescue",
+      shelterCity: (dog.shelter as unknown as { name: string; city: string | null; state: string | null } | null)?.city ?? null,
+      shelterState: (dog.shelter as unknown as { name: string; city: string | null; state: string | null } | null)?.state ?? null,
       bio: dog.personality ?? "This pup is still writing their bio.",
       url: `/dogs/${dog.id}`,
       photo: ((dog.photos as string[] | null)?.[0]) ?? null,
@@ -44,6 +46,8 @@ export async function GET() {
       goodWithKids: dog.good_with_kids ?? null,
       goodWithDogs: dog.good_with_dogs ?? null,
       goodWithCats: dog.good_with_cats ?? null,
+      houseTrained: dog.house_trained ?? null,
+      feeCents: dog.adoption_fee_cents ?? null,
     }));
 
     return NextResponse.json({ dogs }, {

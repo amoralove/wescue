@@ -604,15 +604,16 @@ canvas.addEventListener("click", (event) => {
   if (obj) onDogClick(obj.userData.dogId, obj);
 });
 
-// --- Dog info modal with carousel ---
+// --- Full dog profile modal with carousel ---
 const dogModalOverlay = document.getElementById("dogModalOverlay");
 const cardPhoto = document.getElementById("cardPhoto");
-const cardAvatar = document.getElementById("cardAvatar");
 const cardCounter = document.getElementById("cardCounter");
 const cardName = document.getElementById("cardName");
+const cardFee = document.getElementById("cardFee");
 const cardMeta = document.getElementById("cardMeta");
-const cardBio = document.getElementById("cardBio");
 const cardShelter = document.getElementById("cardShelter");
+const cardCompat = document.getElementById("cardCompat");
+const cardBio = document.getElementById("cardBio");
 const cardAdoptLink = document.getElementById("cardAdoptLink");
 const petBtn = document.getElementById("petBtn");
 const modalPrev = document.getElementById("modalPrev");
@@ -620,25 +621,49 @@ const modalNext = document.getElementById("modalNext");
 
 let currentModalIndex = -1;
 
+function compatIcon(val) {
+  if (val === true) return "✅";
+  if (val === false) return "❌";
+  return "❓";
+}
+
 function updateModalContent() {
   const dog = visibleDogs[currentModalIndex];
   if (!dog) return;
 
+  // Photo or styled placeholder
   if (dog.photo) {
     cardPhoto.innerHTML = `<img src="${dog.photo}" alt="${dog.name}">`;
-    cardPhoto.style.display = "block";
-    cardAvatar.style.display = "none";
   } else {
-    cardPhoto.style.display = "none";
-    cardAvatar.textContent = dog.emoji;
-    cardAvatar.style.display = "block";
+    cardPhoto.innerHTML = `
+      <div class="photo-placeholder">
+        <span class="ph-emoji">${dog.emoji}</span>
+        <p class="ph-name">${dog.name}</p>
+        <p class="ph-breed">${dog.breed}</p>
+      </div>`;
   }
 
   cardCounter.textContent = `${currentModalIndex + 1} of ${visibleDogs.length}`;
   cardName.textContent = dog.name;
-  cardMeta.textContent = `${dog.breed} · ${dog.age}`;
-  cardBio.textContent = dog.bio || "This good pup is still writing their bio.";
-  cardShelter.textContent = dog.shelter;
+  cardFee.textContent = dog.feeCents ? `$${Math.round(dog.feeCents / 100)}` : "";
+  cardMeta.textContent = `${dog.breed} · ${dog.age} · ${dog.size}`;
+
+  const loc = [dog.shelterCity, dog.shelterState].filter(Boolean).join(", ");
+  cardShelter.textContent = dog.shelter + (loc ? `, ${loc}` : "");
+
+  cardCompat.innerHTML = [
+    { label: "Kids", val: dog.goodWithKids },
+    { label: "Dogs", val: dog.goodWithDogs },
+    { label: "Cats", val: dog.goodWithCats },
+    { label: "House Trained", val: dog.houseTrained },
+  ].map(({ label, val }) => `
+    <div class="compat-item">
+      <span>${compatIcon(val)}</span>
+      <small>${label}</small>
+    </div>
+  `).join("");
+
+  cardBio.textContent = dog.bio || "";
   cardAdoptLink.href = dog.url && dog.url.trim() ? dog.url : "/dogs";
 
   modalPrev.disabled = currentModalIndex === 0;

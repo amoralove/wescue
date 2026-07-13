@@ -72,27 +72,39 @@
     <canvas id="parkCanvas"></canvas>
   </main>
 
-  <p class="hint">Click any dog to see their profile. Use filters to find your perfect match.</p>
+  <p class="hint">Click any dog to see their full profile. Use filters to find your match.</p>
 
-  <!-- Dog profile modal with carousel navigation -->
+  <!-- Full dog profile modal -->
   <div class="modal-overlay" id="dogModalOverlay">
     <button class="modal-nav-btn" id="modalPrev" aria-label="Previous dog">&#8592;</button>
 
     <div class="modal dog-card">
       <button class="close-btn" data-close>&times;</button>
 
+      <!-- Photo / placeholder -->
       <div class="dog-card-photo" id="cardPhoto"></div>
-      <div class="dog-card-avatar" id="cardAvatar"></div>
 
       <div class="dog-card-body">
         <p class="dog-card-counter" id="cardCounter"></p>
-        <h2 id="cardName"></h2>
+
+        <div class="dog-card-header">
+          <h2 id="cardName"></h2>
+          <span class="dog-card-fee" id="cardFee"></span>
+        </div>
+
         <p class="dog-card-meta" id="cardMeta"></p>
-        <p class="dog-card-bio" id="cardBio"></p>
         <p class="dog-card-shelter">📍 <span id="cardShelter"></span></p>
+
+        <!-- Compatibility grid -->
+        <div class="compat-grid" id="cardCompat"></div>
+
+        <!-- Bio -->
+        <p class="dog-card-bio" id="cardBio"></p>
+
+        <!-- Actions -->
         <div class="dog-card-actions">
           <button class="secondary-btn" id="petBtn">🖐️ Pet</button>
-          <a class="primary-btn adopt-btn" id="cardAdoptLink" target="_top" rel="noopener">🏡 Meet on Wescue</a>
+          <a class="primary-btn adopt-btn" id="cardAdoptLink" target="_top" rel="noopener">Apply to Adopt</a>
         </div>
       </div>
     </div>

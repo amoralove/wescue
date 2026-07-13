@@ -72,15 +72,20 @@ export default async function DogProfilePage({
           <div
             className="card-sketchy overflow-hidden mb-8 wobbly-1"
           >
-            <div className="h-[300px] md:h-[400px] bg-forest-pale flex items-center justify-center border-b-3 border-pencil">
+            <div className="h-[300px] md:h-[400px] bg-forest-pale flex items-center justify-center border-b-3 border-pencil overflow-hidden">
               {typedDog.photos?.[0] ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={typedDog.photos[0]}
                   alt={typedDog.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-[8rem]">&#x1f436;</span>
+                <div className="text-center px-6">
+                  <span className="text-[6rem] block mb-3">🐾</span>
+                  <p className="font-heading text-xl font-bold opacity-40">{typedDog.name}</p>
+                  <p className="text-sm opacity-30">{typedDog.breed_primary ?? "Mixed breed"}</p>
+                </div>
               )}
             </div>
 
@@ -134,11 +139,7 @@ export default async function DogProfilePage({
                     className="p-3 border-2 border-pencil text-center wobbly-2 bg-paper"
                   >
                     <span className="block text-lg mb-1">
-                      {item.value === true
-                        ? "&#x2705;"
-                        : item.value === false
-                          ? "&#x274C;"
-                          : "&#x2753;"}
+                      {item.value === true ? "✅" : item.value === false ? "❌" : "❓"}
                     </span>
                     <span className="text-sm font-bold">{item.label}</span>
                   </div>

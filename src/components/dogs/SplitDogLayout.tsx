@@ -264,117 +264,128 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
       </aside>
 
       {/* ── Right panel ── */}
-      <div className="hidden md:flex flex-1 min-h-0 relative overflow-hidden">
+      <div className="hidden md:block flex-1 min-h-0 relative overflow-hidden">
 
-        {/* 3D park — always mounted so it doesn't reload; hidden behind profile when a dog is selected */}
+        {/* 3D park — always visible */}
         <iframe
           ref={iframeRef}
           src="/park/index.html"
-          className={`absolute inset-0 w-full h-full border-0 block transition-opacity duration-200 ${
-            selectedDog ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
+          className="absolute inset-0 w-full h-full border-0 block"
           title="Wescue Dog Park"
         />
 
-        {/* Inline full profile panel */}
+        {/* Click-away backdrop (subtle dim) */}
         {selectedDog && (
-          <div className="absolute inset-0 overflow-y-auto bg-paper">
+          <div
+            className="absolute inset-0 bg-black/20 z-10 transition-opacity duration-200"
+            onClick={() => setSelectedDog(null)}
+          />
+        )}
 
-            {/* Sticky back bar */}
-            <button
-              onClick={() => setSelectedDog(null)}
-              className="sticky top-0 z-10 w-full flex items-center gap-2 px-4 py-3 bg-paper/95 backdrop-blur-sm border-b-2 border-pencil/10 text-sm font-bold text-pencil/60 hover:text-forest transition-colors"
-            >
-              ← Back to park
-            </button>
+        {/* Slide-in profile drawer from the right */}
+        <div
+          className="absolute top-0 right-0 bottom-0 z-20 w-[360px] bg-paper border-l-[3px] border-pencil shadow-[-6px_0px_24px_rgba(0,0,0,0.15)] overflow-y-auto transition-transform duration-300 ease-out"
+          style={{ transform: selectedDog ? "translateX(0)" : "translateX(100%)" }}
+        >
+          {selectedDog && (
+            <>
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedDog(null)}
+                className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 border-pencil/20 bg-paper hover:bg-paper-alt text-pencil/50 hover:text-pencil transition-colors text-lg font-bold"
+                aria-label="Close"
+              >
+                ×
+              </button>
 
-            {/* Photo */}
-            <div className="h-64 bg-forest-pale flex items-center justify-center overflow-hidden">
-              {selectedDog.photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={selectedDog.photo}
-                  alt={selectedDog.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="text-center">
-                  <span className="text-[5rem] block">{selectedDog.emoji}</span>
-                  <p className="font-heading text-lg font-bold opacity-30">{selectedDog.name}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="p-6">
-              {/* Name + fee */}
-              <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                <div>
-                  <h2 className="font-heading text-3xl font-bold leading-tight">{selectedDog.name}</h2>
-                  <p className="opacity-60 text-sm mt-0.5">
-                    {selectedDog.breed} · {selectedDog.age}
-                    {selectedDog.size ? ` · ${capitalize(selectedDog.size)}` : ""}
-                    {selectedDog.energy ? ` · ${capitalize(selectedDog.energy)} energy` : ""}
-                  </p>
-                </div>
-                <span className="font-heading text-2xl font-bold text-forest">
-                  {formatFee(selectedDog.feeCents)}
-                </span>
-              </div>
-
-              {/* Compatibility chips */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-                {[
-                  { label: "Kids", value: selectedDog.goodWithKids },
-                  { label: "Dogs", value: selectedDog.goodWithDogs },
-                  { label: "Cats", value: selectedDog.goodWithCats },
-                  { label: "House Trained", value: selectedDog.houseTrained },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="p-2.5 border-2 border-pencil text-center wobbly-2 bg-paper"
-                  >
-                    <span className="block text-base mb-0.5">{compatIcon(item.value)}</span>
-                    <span className="text-xs font-bold">{item.label}</span>
+              {/* Photo */}
+              <div className="h-52 bg-forest-pale flex items-center justify-center overflow-hidden flex-shrink-0">
+                {selectedDog.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selectedDog.photo}
+                    alt={selectedDog.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <span className="text-[5rem] block">{selectedDog.emoji}</span>
+                    <p className="font-heading text-lg font-bold opacity-30">{selectedDog.name}</p>
                   </div>
-                ))}
-              </div>
-
-              {/* Bio */}
-              {selectedDog.bio && (
-                <div className="mb-5">
-                  <h3 className="font-heading text-lg font-bold mb-1.5">About {selectedDog.name}</h3>
-                  <p className="leading-relaxed opacity-80">{selectedDog.bio}</p>
-                </div>
-              )}
-
-              {/* Shelter */}
-              <div className="pt-4 mb-6 border-t-2 border-dashed border-pencil/20">
-                <p className="font-heading font-bold">{selectedDog.shelter}</p>
-                {selectedDog.shelterCity && (
-                  <p className="opacity-60 text-sm">
-                    {selectedDog.shelterCity}{selectedDog.shelterState ? `, ${selectedDog.shelterState}` : ""}
-                  </p>
                 )}
               </div>
 
-              {/* CTAs */}
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href={selectedDog.url}
-                  className="btn-sketchy btn-primary text-base px-6 py-3"
-                >
-                  Apply to Adopt {selectedDog.name} 🐾
-                </Link>
-                <button
-                  onClick={() => setSelectedDog(null)}
-                  className="btn-sketchy text-sm px-4 py-3"
-                >
-                  Keep browsing
-                </button>
+              <div className="p-5">
+                {/* Name + fee */}
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                  <div>
+                    <h2 className="font-heading text-2xl font-bold leading-tight">{selectedDog.name}</h2>
+                    <p className="opacity-60 text-xs mt-0.5">
+                      {selectedDog.breed} · {selectedDog.age}
+                      {selectedDog.size ? ` · ${capitalize(selectedDog.size)}` : ""}
+                      {selectedDog.energy ? ` · ${capitalize(selectedDog.energy)} energy` : ""}
+                    </p>
+                  </div>
+                  <span className="font-heading text-xl font-bold text-forest">
+                    {formatFee(selectedDog.feeCents)}
+                  </span>
+                </div>
+
+                {/* Compatibility chips */}
+                <div className="grid grid-cols-4 gap-1.5 mb-4">
+                  {[
+                    { label: "Kids", value: selectedDog.goodWithKids },
+                    { label: "Dogs", value: selectedDog.goodWithDogs },
+                    { label: "Cats", value: selectedDog.goodWithCats },
+                    { label: "House Trained", value: selectedDog.houseTrained },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="p-2 border-2 border-pencil text-center wobbly-2 bg-paper"
+                    >
+                      <span className="block text-sm mb-0.5">{compatIcon(item.value)}</span>
+                      <span className="text-[10px] font-bold leading-tight">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bio */}
+                {selectedDog.bio && (
+                  <div className="mb-4">
+                    <h3 className="font-heading text-base font-bold mb-1">About {selectedDog.name}</h3>
+                    <p className="text-sm leading-relaxed opacity-80">{selectedDog.bio}</p>
+                  </div>
+                )}
+
+                {/* Shelter */}
+                <div className="pt-3 mb-5 border-t-2 border-dashed border-pencil/20">
+                  <p className="font-heading font-bold text-sm">{selectedDog.shelter}</p>
+                  {selectedDog.shelterCity && (
+                    <p className="opacity-60 text-xs">
+                      {selectedDog.shelterCity}{selectedDog.shelterState ? `, ${selectedDog.shelterState}` : ""}
+                    </p>
+                  )}
+                </div>
+
+                {/* CTAs */}
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href={selectedDog.url}
+                    className="btn-sketchy btn-primary text-sm px-5 py-2.5 text-center"
+                  >
+                    Apply to Adopt {selectedDog.name} 🐾
+                  </Link>
+                  <button
+                    onClick={() => setSelectedDog(null)}
+                    className="btn-sketchy text-xs px-4 py-2"
+                  >
+                    Keep browsing
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export interface ParkDog {
   id: string;
@@ -49,14 +49,29 @@ function toggle<T>(set: Set<T>, val: T): Set<T> {
   return next;
 }
 
-export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
-  const router = useRouter();
+function compatIcon(val: boolean | null) {
+  if (val === true) return "✅";
+  if (val === false) return "❌";
+  return "❓";
+}
 
+function formatFee(cents: number | null) {
+  if (!cents) return "Contact shelter";
+  return `$${Math.round(cents / 100)}`;
+}
+
+function capitalize(s: string | null) {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
   const [query, setQuery] = useState("");
   const [sizes, setSizes] = useState<Set<SizeFilter>>(new Set());
   const [energies, setEnergies] = useState<Set<EnergyFilter>>(new Set());
   const [goodWith, setGoodWith] = useState<Set<string>>(new Set());
   const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedDog, setSelectedDog] = useState<ParkDog | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -74,7 +89,7 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
     });
   }, [dogs, query, sizes, energies, goodWith]);
 
-  // Push filter state into the park iframe whenever filters change
+  // Sync filters into park iframe
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage(
       { type: "parkFilter", query, sizes: [...sizes], energies: [...energies], goodWith: [...goodWith] },
@@ -82,16 +97,24 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
     );
   }, [query, sizes, energies, goodWith]);
 
-  // Navigate to full profile when a dog is clicked in the 3D park
+  // Focus a single dog in the park when one is selected
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage(
+      { type: "parkFocus", dogId: selectedDog?.id ?? null },
+      "*"
+    );
+  }, [selectedDog]);
+
+  // Listen for clicks from the 3D park
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.data?.type !== "parkDogClicked") return;
       const dog = e.data.dog as ParkDog;
-      if (dog?.url) router.push(dog.url);
+      if (dog) setSelectedDog(dog);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [router]);
+  }, []);
 
   // Close filter panel on outside click
   useEffect(() => {
@@ -211,8 +234,10 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
             filtered.map((dog) => (
               <button
                 key={dog.id}
-                onClick={() => router.push(dog.url)}
-                className="flex items-center gap-3 w-full px-3 py-2.5 border-b border-pencil/10 hover:bg-paper-alt transition-colors text-left"
+                onClick={() => setSelectedDog(dog)}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 border-b border-pencil/10 hover:bg-paper-alt transition-colors text-left ${
+                  selectedDog?.id === dog.id ? "bg-forest/5 border-l-[3px] border-l-forest pl-2.5" : ""
+                }`}
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-pencil/15 flex-shrink-0 bg-forest-pale flex items-center justify-center">
                   {dog.photo ? (
@@ -238,14 +263,118 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
         </div>
       </aside>
 
-      {/* ── Right panel: 3D park ── */}
-      <div className="hidden md:block flex-1 min-h-0 relative overflow-hidden">
+      {/* ── Right panel ── */}
+      <div className="hidden md:flex flex-1 min-h-0 relative overflow-hidden">
+
+        {/* 3D park — always mounted so it doesn't reload; hidden behind profile when a dog is selected */}
         <iframe
           ref={iframeRef}
           src="/park/index.html"
-          className="w-full h-full border-0 block"
+          className={`absolute inset-0 w-full h-full border-0 block transition-opacity duration-200 ${
+            selectedDog ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
           title="Wescue Dog Park"
         />
+
+        {/* Inline full profile panel */}
+        {selectedDog && (
+          <div className="absolute inset-0 overflow-y-auto bg-paper">
+
+            {/* Sticky back bar */}
+            <button
+              onClick={() => setSelectedDog(null)}
+              className="sticky top-0 z-10 w-full flex items-center gap-2 px-4 py-3 bg-paper/95 backdrop-blur-sm border-b-2 border-pencil/10 text-sm font-bold text-pencil/60 hover:text-forest transition-colors"
+            >
+              ← Back to park
+            </button>
+
+            {/* Photo */}
+            <div className="h-64 bg-forest-pale flex items-center justify-center overflow-hidden">
+              {selectedDog.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={selectedDog.photo}
+                  alt={selectedDog.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center">
+                  <span className="text-[5rem] block">{selectedDog.emoji}</span>
+                  <p className="font-heading text-lg font-bold opacity-30">{selectedDog.name}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6">
+              {/* Name + fee */}
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                  <h2 className="font-heading text-3xl font-bold leading-tight">{selectedDog.name}</h2>
+                  <p className="opacity-60 text-sm mt-0.5">
+                    {selectedDog.breed} · {selectedDog.age}
+                    {selectedDog.size ? ` · ${capitalize(selectedDog.size)}` : ""}
+                    {selectedDog.energy ? ` · ${capitalize(selectedDog.energy)} energy` : ""}
+                  </p>
+                </div>
+                <span className="font-heading text-2xl font-bold text-forest">
+                  {formatFee(selectedDog.feeCents)}
+                </span>
+              </div>
+
+              {/* Compatibility chips */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+                {[
+                  { label: "Kids", value: selectedDog.goodWithKids },
+                  { label: "Dogs", value: selectedDog.goodWithDogs },
+                  { label: "Cats", value: selectedDog.goodWithCats },
+                  { label: "House Trained", value: selectedDog.houseTrained },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="p-2.5 border-2 border-pencil text-center wobbly-2 bg-paper"
+                  >
+                    <span className="block text-base mb-0.5">{compatIcon(item.value)}</span>
+                    <span className="text-xs font-bold">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bio */}
+              {selectedDog.bio && (
+                <div className="mb-5">
+                  <h3 className="font-heading text-lg font-bold mb-1.5">About {selectedDog.name}</h3>
+                  <p className="leading-relaxed opacity-80">{selectedDog.bio}</p>
+                </div>
+              )}
+
+              {/* Shelter */}
+              <div className="pt-4 mb-6 border-t-2 border-dashed border-pencil/20">
+                <p className="font-heading font-bold">{selectedDog.shelter}</p>
+                {selectedDog.shelterCity && (
+                  <p className="opacity-60 text-sm">
+                    {selectedDog.shelterCity}{selectedDog.shelterState ? `, ${selectedDog.shelterState}` : ""}
+                  </p>
+                )}
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={selectedDog.url}
+                  className="btn-sketchy btn-primary text-base px-6 py-3"
+                >
+                  Apply to Adopt {selectedDog.name} 🐾
+                </Link>
+                <button
+                  onClick={() => setSelectedDog(null)}
+                  className="btn-sketchy text-sm px-4 py-3"
+                >
+                  Keep browsing
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

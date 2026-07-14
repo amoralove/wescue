@@ -762,13 +762,34 @@ if (isEmbedded) {
   document.querySelector(".topbar")?.remove();
   document.querySelector(".hint")?.remove();
 
+  // Make the park canvas fill the entire iframe — no box, no borders
+  const embeddedStyle = document.createElement("style");
+  embeddedStyle.textContent = [
+    "html,body{margin:0;padding:0;overflow:hidden;height:100%;background:#cdeffd}",
+    ".park{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;",
+    "margin:0!important;border-radius:0!important;border:none!important;box-shadow:none!important}",
+  ].join("");
+  document.head.appendChild(embeddedStyle);
+
   window.addEventListener("message", (e) => {
-    if (e.data?.type !== "parkFilter") return;
-    filterQuery = e.data.query ?? "";
-    filterSizes = new Set(e.data.sizes ?? []);
-    filterEnergies = new Set(e.data.energies ?? []);
-    filterGoodWith = new Set(e.data.goodWith ?? []);
-    applyFilter();
+    if (e.data?.type === "parkFilter") {
+      filterQuery = e.data.query ?? "";
+      filterSizes = new Set(e.data.sizes ?? []);
+      filterEnergies = new Set(e.data.energies ?? []);
+      filterGoodWith = new Set(e.data.goodWith ?? []);
+      applyFilter();
+    } else if (e.data?.type === "parkFocus") {
+      const focusId = e.data.dogId ?? null;
+      if (focusId === null) {
+        // Restore filter-based visibility
+        applyFilter();
+      } else {
+        // Show only the focused dog
+        for (const [id, entity] of entities) {
+          entity.model.root.visible = id === focusId;
+        }
+      }
+    }
   });
 }
 

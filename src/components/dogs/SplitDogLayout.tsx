@@ -79,15 +79,18 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
     });
   }, [dogs, query, sizes, energies, goodWith]);
 
+  function sendTopark(msg: object) {
+    iframeRef.current?.contentWindow?.postMessage(msg, "*");
+  }
+
   // Push filter state into the park iframe whenever filters change
   useEffect(() => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "parkFilter", query, sizes: [...sizes], energies: [...energies], goodWith: [...goodWith] },
-      "*"
-    );
+    sendTopark({ type: "parkFilter", query, sizes: [...sizes], energies: [...energies], goodWith: [...goodWith] });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, sizes, energies, goodWith]);
 
   // Receive dog-click events bubbled up from the park iframe
+  // Park clicks don't focus (all dogs stay visible); only sidebar clicks focus
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.data?.type !== "parkDogClicked") return;
@@ -110,12 +113,29 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
   }, [filterOpen]);
 
   const prevDog = useCallback(() => {
-    if (modalIndex > 0) { const ni = modalIndex - 1; setModalIndex(ni); setSelectedDog(filtered[ni]); }
+    if (modalIndex > 0) {
+      const ni = modalIndex - 1;
+      setModalIndex(ni);
+      setSelectedDog(filtered[ni]);
+      sendTopark({ type: "parkFocus", dogId: filtered[ni].id });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalIndex, filtered]);
 
   const nextDog = useCallback(() => {
-    if (modalIndex < filtered.length - 1) { const ni = modalIndex + 1; setModalIndex(ni); setSelectedDog(filtered[ni]); }
+    if (modalIndex < filtered.length - 1) {
+      const ni = modalIndex + 1;
+      setModalIndex(ni);
+      setSelectedDog(filtered[ni]);
+      sendTopark({ type: "parkFocus", dogId: filtered[ni].id });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalIndex, filtered]);
+
+  function closeModal() {
+    setSelectedDog(null);
+    sendTopark({ type: "parkFocus", dogId: null });
+  }
 
   // Keyboard nav for the modal
   useEffect(() => {
@@ -123,10 +143,11 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
     function onKey(e: KeyboardEvent) {
       if (e.key === "ArrowLeft") prevDog();
       else if (e.key === "ArrowRight") nextDog();
-      else if (e.key === "Escape") setSelectedDog(null);
+      else if (e.key === "Escape") closeModal();
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDog, prevDog, nextDog]);
 
   function clearFilters() {
@@ -239,7 +260,7 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
               filtered.map((dog, i) => (
                 <button
                   key={dog.id}
-                  onClick={() => { setModalIndex(i); setSelectedDog(dog); }}
+                  onClick={() => { setModalIndex(i); setSelectedDog(dog); sendTopark({ type: "parkFocus", dogId: dog.id }); }}
                   className="flex items-center gap-3 w-full px-3 py-2.5 border-b border-pencil/10 hover:bg-paper-alt transition-colors text-left"
                 >
                   <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-pencil/15 flex-shrink-0 bg-forest-pale flex items-center justify-center">
@@ -282,7 +303,7 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center gap-4 p-4"
           style={{ background: "rgba(20,20,10,0.55)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelectedDog(null); }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
           <button
             onClick={prevDog}
@@ -295,7 +316,7 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
 
           <div className="card-sketchy max-w-[480px] w-full max-h-[90vh] overflow-y-auto relative">
             <button
-              onClick={() => setSelectedDog(null)}
+              onClick={closeModal}
               className="absolute top-2.5 right-3 z-10 text-2xl leading-none text-pencil/35 hover:text-pencil transition-colors"
               aria-label="Close"
             >

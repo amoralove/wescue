@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendApplicationConfirmation } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,6 +60,22 @@ export async function POST(request: NextRequest) {
         { error: error.message ?? "Database error" },
         { status: 500 }
       );
+    }
+
+    // Send confirmation email (non-fatal)
+    if (user.email) {
+      const { data: shelter } = await supabase
+        .from("shelters")
+        .select("name")
+        .eq("id", dog.shelter_id)
+        .single();
+
+      await sendApplicationConfirmation({
+        to: user.email,
+        dogName: dog.name,
+        shelterName: shelter?.name ?? "the shelter",
+        applicationId: data.id,
+      });
     }
 
     return NextResponse.json({ application: data }, { status: 201 });

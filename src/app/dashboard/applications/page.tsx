@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
+import { WithdrawButton } from "@/components/dogs/WithdrawButton";
 import type { Application } from "@/types";
 
 const STATUS_CONFIG: Record<
@@ -129,12 +130,17 @@ export default async function ApplicationsPage() {
                           </div>
                         )}
 
-                        <Link
-                          href={`/dogs/${dog?.id}`}
-                          className="text-sm text-forest font-bold hover:underline"
-                        >
-                          View {dog?.name}&apos;s profile &#x2192;
-                        </Link>
+                        <div className="flex items-center gap-4 flex-wrap mt-1">
+                          <Link
+                            href={`/dogs/${dog?.id}`}
+                            className="text-sm text-forest font-bold hover:underline"
+                          >
+                            View {dog?.name}&apos;s profile &#x2192;
+                          </Link>
+                          {!["withdrawn", "declined", "approved"].includes(app.status) && (
+                            <WithdrawButton applicationId={app.id} />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

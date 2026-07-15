@@ -49,6 +49,23 @@ function toggle<T>(set: Set<T>, val: T): Set<T> {
   return next;
 }
 
+function ageLabel(years: number | null, months: number | null): string {
+  if (years !== null && years > 0) return years === 1 ? "1 year" : `${years} years`;
+  if (months !== null && months > 0) return months === 1 ? "1 month" : `${months} months`;
+  return "Age unknown";
+}
+
+function emojiForBreedSize(breed: string | null, size: string): string {
+  const b = (breed ?? "").toLowerCase();
+  if (b.includes("dachshund") || b.includes("doxie")) return "🌭";
+  if (b.includes("golden retriever") || b.includes("golden")) return "🦴";
+  if (b.includes("poodle") || b.includes("doodle") || b.includes("oodle")) return "🐩";
+  if (b.includes("shepherd") || b.includes("husky") || b.includes("malinois") || b.includes("collie")) return "🐕‍🦺";
+  if (size === "small") return "🐶";
+  if (size === "large" || size === "xlarge") return "🦮";
+  return "🐕";
+}
+
 function compatIcon(val: boolean | null) {
   if (val === true) return "✅";
   if (val === false) return "❌";
@@ -65,7 +82,9 @@ function capitalize(s: string | null) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
+export function SplitDogLayout({ dogs: initialDogs, total }: { dogs: ParkDog[]; total: number }) {
+  const [dogs, setDogs] = useState<ParkDog[]>(initialDogs);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [query, setQuery] = useState("");
   const [sizes, setSizes] = useState<Set<SizeFilter>>(new Set());
   const [energies, setEnergies] = useState<Set<EnergyFilter>>(new Set());
@@ -75,6 +94,44 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/dogs?limit=50&offset=${dogs.length}`);
+      const json = await res.json();
+      if (json.dogs?.length) {
+        setDogs((prev) => {
+          const existingIds = new Set(prev.map((d) => d.id));
+          const newDogs = (json.dogs as Record<string, unknown>[])
+            .filter((d) => !existingIds.has(d.id as string))
+            .map((d) => ({
+              id: d.id as string,
+              name: d.name as string,
+              breed: (d.breed_primary as string | null) ?? "Mixed breed",
+              age: ageLabel(d.age_years as number | null, d.age_months as number | null),
+              emoji: emojiForBreedSize(d.breed_primary as string | null, d.size as string),
+              shelter: ((d.shelter as { name?: string } | null)?.name) ?? "Local Rescue",
+              shelterCity: (d.shelter as { city?: string | null } | null)?.city ?? null,
+              shelterState: (d.shelter as { state?: string | null } | null)?.state ?? null,
+              bio: (d.personality as string | null) ?? "This pup is still writing their bio.",
+              url: `/dogs/${d.id as string}`,
+              photo: ((d.photos as string[] | null)?.[0]) ?? null,
+              size: (d.size as string | null) ?? "medium",
+              energy: (d.energy_level as string | null) ?? null,
+              goodWithKids: (d.good_with_kids as boolean | null) ?? null,
+              goodWithDogs: (d.good_with_dogs as boolean | null) ?? null,
+              goodWithCats: (d.good_with_cats as boolean | null) ?? null,
+              houseTrained: (d.house_trained as boolean | null) ?? null,
+              feeCents: (d.adoption_fee_cents as number | null) ?? null,
+            }));
+          return [...prev, ...newDogs];
+        });
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -259,6 +316,18 @@ export function SplitDogLayout({ dogs }: { dogs: ParkDog[] }) {
                 <span className="text-pencil/25 text-xl flex-shrink-0">›</span>
               </button>
             ))
+          )}
+          {/* Load more */}
+          {dogs.length < total && (
+            <div className="p-3 border-t border-pencil/10 flex-shrink-0">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="btn-sketchy w-full text-sm py-2 disabled:opacity-50"
+              >
+                {loadingMore ? "Loading…" : `Load more (${total - dogs.length} remaining)`}
+              </button>
+            </div>
           )}
         </div>
       </aside>

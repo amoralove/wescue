@@ -27,12 +27,14 @@ function ageLabel(years: number | null, months: number | null): string {
 
 export default async function DogsPage() {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("dogs")
     .select(
-      "id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, shelter:shelters(name, city, state)"
+      "id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, shelter:shelters(name, city, state)",
+      { count: "exact" }
     )
     .eq("status", "available")
+    .order("created_at", { ascending: false })
     .limit(50);
 
   type ShelterRow = { name: string; city: string | null; state: string | null } | null;
@@ -64,7 +66,7 @@ export default async function DogsPage() {
   return (
     <>
       <Navbar />
-      <SplitDogLayout dogs={dogs} />
+      <SplitDogLayout dogs={dogs} total={count ?? dogs.length} />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sendApplicationConfirmation } from "@/lib/email";
+import { sendApplicationConfirmation, sendNewApplicationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,18 +62,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send confirmation email (non-fatal)
-    if (user.email) {
-      const { data: shelter } = await supabase
-        .from("shelters")
-        .select("name")
-        .eq("id", dog.shelter_id)
-        .single();
+    // Send emails (non-fatal)
+    const { data: shelter } = await supabase
+      .from("shelters")
+      .select("name, email")
+      .eq("id", dog.shelter_id)
+      .single();
 
+    if (user.email) {
       await sendApplicationConfirmation({
         to: user.email,
         dogName: dog.name,
         shelterName: shelter?.name ?? "the shelter",
+        applicationId: data.id,
+      });
+    }
+
+    if (shelter?.email) {
+      await sendNewApplicationEmail({
+        to: shelter.email,
+        dogName: dog.name,
+        applicantEmail: user.email ?? "unknown",
         applicationId: data.id,
       });
     }

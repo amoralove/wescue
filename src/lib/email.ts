@@ -46,6 +46,51 @@ export async function sendApplicationConfirmation({
   }
 }
 
+export async function sendNewApplicationEmail({
+  to,
+  dogName,
+  applicantEmail,
+  applicationId,
+}: {
+  to: string;
+  dogName: string;
+  applicantEmail: string;
+  applicationId: string;
+}) {
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `New application for ${dogName}! 🐾`,
+      html: `
+        <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: #2d2d2d;">
+          <p style="font-size: 32px; margin: 0 0 8px;">📬</p>
+          <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 16px;">New adoption application!</h1>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 12px;">
+            Someone has applied to adopt <strong>${dogName}</strong>.
+          </p>
+          <div style="background: #f5f5f0; border-left: 3px solid #2d7d4e; padding: 12px 16px; margin: 0 0 24px;">
+            <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px; opacity: 0.6;">APPLICANT</p>
+            <p style="font-size: 15px; margin: 0;">${applicantEmail}</p>
+          </div>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 24px; opacity: 0.7;">
+            Log in to your shelter dashboard to review the application and take action.
+          </p>
+          <a href="${BASE_URL}/shelter/applications"
+             style="display: inline-block; background: #2d7d4e; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-size: 15px;">
+            Review Application →
+          </a>
+          <p style="font-size: 13px; opacity: 0.5; margin: 32px 0 0;">
+            Wescue · Every dog deserves a home · Application ID: ${applicationId}
+          </p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error("Failed to send new application email to shelter:", err);
+  }
+}
+
 export async function sendStatusUpdateEmail({
   to,
   dogName,

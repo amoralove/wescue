@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { getSystemPrompt, extractPreferences, stripPreferencesTag } from "@/lib/ai";
 import { matchDogs } from "@/lib/matching";
 import { createClient } from "@/lib/supabase/server";
 import type { ChatMessage, Dog } from "@/types";
 
-const client = new Anthropic();
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "llama3.2";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,15 +15,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "messages array is required" }, { status: 400 });
     }
 
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: getSystemPrompt(),
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    const res = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages: [
+          { role: "system", content: getSystemPrompt() },
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ],
+        stream: false,
+      }),
     });
 
-    const assistantText =
-      response.content.find((b) => b.type === "text")?.text ?? "";
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Ollama error ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    const assistantText: string = data.message?.content ?? "";
 
     const preferences = extractPreferences(assistantText);
     const visibleText = stripPreferencesTag(assistantText);

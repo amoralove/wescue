@@ -45,6 +45,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: visibleText, preferences, matches });
   } catch (error) {
     console.error("Chat API error:", error);
+    // Surface credit errors so the UI can offer a fallback
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("credit balance") || msg.includes("insufficient")) {
+      return NextResponse.json({ error: "NO_CREDITS" }, { status: 402 });
+    }
     return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 });
   }
 }

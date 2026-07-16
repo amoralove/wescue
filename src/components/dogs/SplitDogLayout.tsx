@@ -198,6 +198,16 @@ export function SplitDogLayout({ dogs: initialDogs, total }: { dogs: ParkDog[]; 
       {/* ── Left sidebar ── */}
       <aside className="flex flex-col flex-1 md:flex-none md:w-[340px] min-h-0 bg-paper border-b-[3px] md:border-b-0 md:border-r-[3px] border-pencil overflow-hidden">
 
+        {/* AI match prompt */}
+        <Link
+          href="/chat"
+          className="flex items-center gap-2 px-4 py-2.5 bg-forest/5 border-b-[2px] border-pencil/10 hover:bg-forest/10 transition-colors text-xs font-bold text-forest flex-shrink-0"
+        >
+          <span>✨</span>
+          <span>Not sure? Get AI recommendations</span>
+          <span className="ml-auto opacity-50">→</span>
+        </Link>
+
         {/* Search + filter header */}
         <div className="p-3 border-b-[2px] border-pencil/20 flex-shrink-0 space-y-2">
           <div className="flex gap-2">

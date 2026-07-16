@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendApplicationConfirmation } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,11 +62,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send confirmation email (non-fatal)
+    if (user.email) {
+      const { data: shelter } = await supabase
+        .from("shelters")
+        .select("name")
+        .eq("id", dog.shelter_id)
+        .single();
+
+      await sendApplicationConfirmation({
+        to: user.email,
+        dogName: dog.name,
+        shelterName: shelter?.name ?? "the shelter",
+        applicationId: data.id,
+      });
+    }
+
     return NextResponse.json({ application: data }, { status: 201 });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("Application submit error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await request.json();
+    if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+    const { data: existing } = await supabase
+      .from("applications")
+      .select("id, user_id, status")
+      .eq("id", id)
+      .single();
+
+    if (!existing) return NextResponse.json({ error: "Application not found" }, { status: 404 });
+    if (existing.user_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (existing.status === "withdrawn") return NextResponse.json({ error: "Already withdrawn" }, { status: 409 });
+
+    const { data, error } = await supabase
+      .from("applications")
+      .update({ status: "withdrawn" })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ application: data });
+  } catch (error) {
+    console.error("Withdraw error:", error);
+    return NextResponse.json({ error: "Failed to withdraw application" }, { status: 500 });
   }
 }
 

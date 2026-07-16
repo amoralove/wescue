@@ -1,50 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  buildMessages,
-  getSystemPrompt,
-  extractPreferences,
-  stripPreferencesTag,
-} from "@/lib/ai";
+import Anthropic from "@anthropic-ai/sdk";
+import { getSystemPrompt, extractPreferences, stripPreferencesTag } from "@/lib/ai";
 import { matchDogs } from "@/lib/matching";
 import { createClient } from "@/lib/supabase/server";
 import type { ChatMessage, Dog } from "@/types";
 
-const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://localhost:11434";
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "llama3.2";
+const client = new Anthropic();
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = (await request.json()) as {
-      messages: ChatMessage[];
-    };
+    const { messages } = (await request.json()) as { messages: ChatMessage[] };
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: "messages array is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "messages array is required" }, { status: 400 });
     }
 
-    const ollamaRes = await fetch(`${OLLAMA_URL}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        stream: false,
-        messages: [
-          { role: "system", content: getSystemPrompt() },
-          ...buildMessages(messages),
-        ],
-      }),
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      system: getSystemPrompt(),
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
     });
 
-    if (!ollamaRes.ok) {
-      const text = await ollamaRes.text();
-      throw new Error(`Ollama error ${ollamaRes.status}: ${text}`);
-    }
-
-    const data = await ollamaRes.json();
-    const assistantText: string = data.message?.content ?? "";
+    const assistantText =
+      response.content.find((b) => b.type === "text")?.text ?? "";
 
     const preferences = extractPreferences(assistantText);
     const visibleText = stripPreferencesTag(assistantText);
@@ -63,16 +42,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      message: visibleText,
-      preferences,
-      matches,
-    });
+    return NextResponse.json({ message: visibleText, preferences, matches });
   } catch (error) {
     console.error("Chat API error:", error);
-    return NextResponse.json(
-      { error: "Failed to process chat message" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 });
   }
 }

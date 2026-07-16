@@ -87,6 +87,11 @@ function preloadModels() {
 
 const PET_KEY = "wescue-dog-park-pets";
 
+// When embedded inside the split-layout iframe, the parent page handles
+// the filter bar and modal; the park only needs to handle 3D rendering
+// and relay dog-click events upward via postMessage.
+const isEmbedded = window.parent !== window;
+
 const parkEl = document.getElementById("park");
 const canvas = document.getElementById("parkCanvas");
 const dogCountEl = document.getElementById("dogCount");
@@ -678,10 +683,15 @@ function openDogModal(index, worldObj) {
 }
 
 function onDogClick(id, worldObj) {
-  // Only open if this dog passes the current filter
   const index = visibleDogs.findIndex((d) => d.id === id);
   if (index === -1) return;
-  openDogModal(index, worldObj);
+  if (isEmbedded) {
+    // Let the parent page open the shared modal; spawn heart animation here
+    if (worldObj) spawnHeart(worldObj);
+    window.parent.postMessage({ type: "parkDogClicked", dog: visibleDogs[index] }, "*");
+  } else {
+    openDogModal(index, worldObj);
+  }
 }
 
 modalPrev.addEventListener("click", () => {
@@ -745,6 +755,43 @@ clearFiltersBtn.addEventListener('click', () => {
   filterPanel.classList.remove('open');
   applyFilter();
 });
+
+// ── Embedded mode: hide park-owned UI and bridge with parent page ──
+if (isEmbedded) {
+  document.querySelector(".filter-bar")?.remove();
+  document.querySelector(".topbar")?.remove();
+  document.querySelector(".hint")?.remove();
+
+  // Make the park canvas fill the entire iframe — no box, no borders
+  const embeddedStyle = document.createElement("style");
+  embeddedStyle.textContent = [
+    "html,body{margin:0;padding:0;overflow:hidden;height:100%;background:#cdeffd}",
+    ".park{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;",
+    "margin:0!important;border-radius:0!important;border:none!important;box-shadow:none!important}",
+  ].join("");
+  document.head.appendChild(embeddedStyle);
+
+  window.addEventListener("message", (e) => {
+    if (e.data?.type === "parkFilter") {
+      filterQuery = e.data.query ?? "";
+      filterSizes = new Set(e.data.sizes ?? []);
+      filterEnergies = new Set(e.data.energies ?? []);
+      filterGoodWith = new Set(e.data.goodWith ?? []);
+      applyFilter();
+    } else if (e.data?.type === "parkFocus") {
+      const focusId = e.data.dogId ?? null;
+      if (focusId === null) {
+        // Restore filter-based visibility
+        applyFilter();
+      } else {
+        // Show only the focused dog
+        for (const [id, entity] of entities) {
+          entity.model.root.visible = id === focusId;
+        }
+      }
+    }
+  });
+}
 
 function spawnHeart(worldObj) {
   const worldPos = new THREE.Vector3();

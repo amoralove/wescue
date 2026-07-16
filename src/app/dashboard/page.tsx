@@ -17,6 +17,14 @@ export default async function DashboardPage() {
     user.email?.split("@")[0] ??
     "Friend";
 
+  const { data: profile } = await supabase
+    .from("adopter_profiles")
+    .select("id, living_situation, activity_level")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const profileIncomplete = !profile || !profile.living_situation || !profile.activity_level;
+
   return (
     <>
       <Navbar />
@@ -25,9 +33,27 @@ export default async function DashboardPage() {
           <h1 className="font-heading text-4xl font-bold mb-2">
             Hey, {name}! &#x1f43e;
           </h1>
-          <p className="text-lg opacity-60 mb-10">
+          <p className="text-lg opacity-60 mb-6">
             Welcome to your Wescue dashboard.
           </p>
+
+          {profileIncomplete && (
+            <Link
+              href="/dashboard/profile"
+              className="flex items-start gap-4 p-4 mb-8 border-2 border-forest/40 bg-forest/5 rounded-xl hover:bg-forest/10 transition-colors group"
+            >
+              <span className="text-3xl flex-shrink-0">📋</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-heading font-bold text-forest group-hover:underline">
+                  Complete your adopter profile
+                </p>
+                <p className="text-sm opacity-70 mt-0.5">
+                  A complete profile helps shelters say yes faster. Add your home info, references, and ID — takes about 3 minutes.
+                </p>
+              </div>
+              <span className="text-forest/50 text-xl flex-shrink-0 self-center">→</span>
+            </Link>
+          )}
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Start Matching */}

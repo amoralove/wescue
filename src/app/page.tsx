@@ -269,7 +269,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="#" className="btn-sketchy btn-primary text-lg px-8 py-4">
+            <Link href="/shelter/register" className="btn-sketchy btn-primary text-lg px-8 py-4">
               Register Your Shelter
             </Link>
           </div>

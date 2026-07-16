@@ -57,7 +57,7 @@ function LoginForm() {
           href="/"
           className="flex items-center justify-center gap-1 font-heading text-3xl font-bold text-forest mb-10"
         >
-          <span className="text-2xl">&#x1f43e;</span> wescue
+          <span className="text-2xl">&#x1f43e;</span> wescues
         </Link>
 
         <div

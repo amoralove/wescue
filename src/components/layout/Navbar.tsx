@@ -37,7 +37,7 @@ export function Navbar() {
           href="/"
           className="font-heading text-[1.7rem] font-bold text-forest flex items-center gap-1"
         >
-          <span className="text-xl">&#x1f43e;</span> wescue
+          <span className="text-xl">&#x1f43e;</span> wescues
         </Link>
 
         <div

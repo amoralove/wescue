@@ -350,7 +350,7 @@ export function SplitDogLayout({ dogs: initialDogs, total }: { dogs: ParkDog[]; 
           ref={iframeRef}
           src="/park/index.html"
           className="absolute inset-0 w-full h-full border-0 block"
-          title="Wescue Dog Park"
+          title="Wescues Dog Park"
         />
 
         {/* Click-away backdrop (subtle dim) */}

@@ -45,7 +45,7 @@ export default function ResetPasswordPage() {
           href="/"
           className="flex items-center justify-center gap-1 font-heading text-3xl font-bold text-forest mb-10"
         >
-          <span className="text-2xl">🐾</span> wescue
+          <span className="text-2xl">🐾</span> wescues
         </Link>
 
         <div

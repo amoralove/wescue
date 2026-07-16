@@ -4,7 +4,7 @@ import { SplitDogLayout } from "@/components/dogs/SplitDogLayout";
 import type { ParkDog } from "@/components/dogs/SplitDogLayout";
 
 export const metadata = {
-  title: "Browse Dogs — Wescue",
+  title: "Browse Dogs — Wescues",
   description: "Browse rescue dogs available for adoption from verified shelters.",
 };
 

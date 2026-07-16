@@ -1,8 +1,8 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM ?? "Wescue <onboarding@resend.dev>";
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wescue.com";
+const FROM = process.env.EMAIL_FROM ?? "Wescues <onboarding@resend.dev>";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wescues.com";
 
 export async function sendApplicationConfirmation({
   to,
@@ -35,7 +35,7 @@ export async function sendApplicationConfirmation({
             View Your Application →
           </a>
           <p style="font-size: 13px; opacity: 0.5; margin: 32px 0 0;">
-            Wescue · Every dog deserves a home
+            Wescues · Every dog deserves a home
           </p>
         </div>
       `,
@@ -81,7 +81,7 @@ export async function sendNewApplicationEmail({
             Review Application →
           </a>
           <p style="font-size: 13px; opacity: 0.5; margin: 32px 0 0;">
-            Wescue · Every dog deserves a home · Application ID: ${applicationId}
+            Wescues · Every dog deserves a home · Application ID: ${applicationId}
           </p>
         </div>
       `,
@@ -147,7 +147,7 @@ export async function sendStatusUpdateEmail({
              style="display: inline-block; background: #2d7d4e; color: white; font-weight: bold; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-size: 15px;">
             View Application →
           </a>
-          <p style="font-size: 13px; opacity: 0.5; margin: 32px 0 0;">Wescue · Every dog deserves a home</p>
+          <p style="font-size: 13px; opacity: 0.5; margin: 32px 0 0;">Wescues · Every dog deserves a home</p>
         </div>
       `,
     });

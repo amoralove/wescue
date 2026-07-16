@@ -34,7 +34,7 @@ export default async function DashboardPage() {
             Hey, {name}! &#x1f43e;
           </h1>
           <p className="text-lg opacity-60 mb-6">
-            Welcome to your Wescue dashboard.
+            Welcome to your Wescues dashboard.
           </p>
 
           {profileIncomplete && (

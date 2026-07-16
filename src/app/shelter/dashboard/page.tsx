@@ -42,7 +42,7 @@ export default async function ShelterDashboardPage() {
       {/* Shelter nav */}
       <nav className="border-b-[3px] border-pencil bg-paper px-6 py-4 flex items-center justify-between">
         <Link href="/shelter/dashboard" className="font-heading text-xl font-bold text-forest flex items-center gap-2">
-          🐾 Wescue <span className="text-pencil/30 font-normal">· Shelter Portal</span>
+          🐾 Wescues <span className="text-pencil/30 font-normal">· Shelter Portal</span>
         </Link>
         <div className="flex items-center gap-4 text-sm font-bold">
           <Link href="/shelter/dogs" className="hover:text-forest transition-colors">Dogs</Link>

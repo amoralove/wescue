@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 
 export const metadata = {
-  title: "Find Your Match - Wescue",
+  title: "Find Your Match - Wescues",
   description: "Chat with our AI to find rescue dogs that match your lifestyle.",
 };
 

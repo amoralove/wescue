@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wescue - Find Your Perfect Rescue Dog",
+  title: "Wescues - Find Your Perfect Rescue Dog",
   description:
-    "Wescue matches you with verified shelter dogs that fit your lifestyle. No breeders. No puppy mills. Ever.",
+    "Wescues matches you with verified shelter dogs that fit your lifestyle. No breeders. No puppy mills. Ever.",
   openGraph: {
-    title: "Wescue - Find Your Perfect Rescue Dog",
+    title: "Wescues - Find Your Perfect Rescue Dog",
     description:
       "AI-powered matching with verified rescue dogs. No breeders. No puppy mills.",
     type: "website",

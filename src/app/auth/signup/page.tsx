@@ -63,7 +63,7 @@ export default function SignupPage() {
             href="/"
             className="flex items-center justify-center gap-1 font-heading text-3xl font-bold text-forest mb-10"
           >
-            <span className="text-2xl">&#x1f43e;</span> wescue
+            <span className="text-2xl">&#x1f43e;</span> wescues
           </Link>
 
           <div
@@ -102,7 +102,7 @@ export default function SignupPage() {
           href="/"
           className="flex items-center justify-center gap-1 font-heading text-3xl font-bold text-forest mb-10"
         >
-          <span className="text-2xl">&#x1f43e;</span> wescue
+          <span className="text-2xl">&#x1f43e;</span> wescues
         </Link>
 
         <div
@@ -118,7 +118,7 @@ export default function SignupPage() {
           />
 
           <h1 className="font-heading text-3xl font-bold text-center mb-2">
-            Join Wescue
+            Join Wescues
           </h1>
           <p className="text-center opacity-60 mb-8">
             Create an account to save matches and apply to adopt
@@ -239,7 +239,7 @@ export default function SignupPage() {
 
         <p className="text-center text-xs mt-6 opacity-40 max-w-sm mx-auto">
           By creating an account, you agree to our Terms of Service and
-          Privacy Policy. Wescue is free for adopters — always.
+          Privacy Policy. Wescues is free for adopters — always.
         </p>
       </div>
     </div>

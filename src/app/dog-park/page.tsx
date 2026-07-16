@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 
-export const metadata = { title: "Dog Park — Wescue" };
+export const metadata = { title: "Dog Park — Wescues" };
 
 export default function DogParkPage() {
   return (
@@ -18,7 +18,7 @@ export default function DogParkPage() {
         <iframe
           src="/park/index.html"
           style={{ width: "100%", height: "100%", border: "none" }}
-          title="Wescue Dog Park"
+          title="Wescues Dog Park"
         />
       </div>
     </>

@@ -19,7 +19,7 @@ export default function Home() {
               No breeders. No puppy mills. Ever.
             </p>
             <p className="text-lg md:text-xl opacity-75 max-w-[480px] mb-8 leading-relaxed">
-              Every dog on Wescue comes from a verified shelter or rescue.
+              Every dog on Wescues comes from a verified shelter or rescue.
               Just tell us about your life, and we&apos;ll match you with
               dogs that actually fit.
             </p>
@@ -142,7 +142,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Wescue */}
+      {/* Why Wescues */}
       <section className="py-24 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <div
@@ -152,7 +152,7 @@ export default function Home() {
                 "255px 15px 225px 15px / 15px 225px 15px 255px",
             }}
           >
-            Why Wescue?
+            Why Wescues?
           </div>
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">
             We&apos;re building adoption
@@ -256,7 +256,7 @@ export default function Home() {
                 ["Pre-qualified applicants.", "Adopters arrive with lifestyle data already collected."],
                 ["Every dog gets visibility.", "Our algorithm ensures overlooked dogs reach the right people."],
                 ["Reduce returns.", "Better matches mean longer-lasting adoptions."],
-                ["Free to join.", "Wescue is free for shelters. Always will be."],
+                ["Free to join.", "Wescues is free for shelters. Always will be."],
               ].map(([strong, rest]) => (
                 <li
                   key={strong}

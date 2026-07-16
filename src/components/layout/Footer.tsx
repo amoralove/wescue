@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="font-heading text-2xl font-bold text-forest-pale mb-2 flex items-center gap-1">
-              <span>&#x1f43e;</span> wescue
+              <span>&#x1f43e;</span> wescues
             </div>
             <p className="text-white/50 text-base max-w-[280px]">
               Making rescue dog adoption easier, faster, and better matched.
@@ -49,7 +49,7 @@ export function Footer() {
 
         <div className="border-t-2 border-dashed border-white/15 pt-5 text-center">
           <p className="text-white/40 text-sm">
-            &copy; {new Date().getFullYear()} Wescue. Shelter-first, always. &#x1f43e;
+            &copy; {new Date().getFullYear()} Wescues. Shelter-first, always. &#x1f43e;
           </p>
         </div>
       </div>

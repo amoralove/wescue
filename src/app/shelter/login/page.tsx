@@ -37,7 +37,7 @@ export default function ShelterLoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6 py-20">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center justify-center gap-1 font-heading text-3xl font-bold text-forest mb-10">
-          <span className="text-2xl">🐾</span> wescue
+          <span className="text-2xl">🐾</span> wescues
         </Link>
 
         <div className="card-sketchy p-8 relative" style={{ borderRadius: WOBBLY }}>

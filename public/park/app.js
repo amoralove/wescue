@@ -2,10 +2,16 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 // Dogs are loaded from the Wescue API (/api/park-dogs) at startup.
-// Fallback seeds are shown while loading or if the fetch fails.
+// Fallback seeds are shown while loading, if the fetch fails, or if the DB is empty.
 const FALLBACK_DOGS = [
-  { id: "fallback-1", name: "Biscuit", breed: "Terrier mix", age: "2 years", emoji: "🐕",
-    shelter: "Loading rescues…", bio: "Hang tight — fetching real shelter dogs.", url: "" },
+  { id: "fb-1", name: "Biscuit",  breed: "Terrier",             age: "2 years",  emoji: "🐕",   size: "medium", energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Biscuit loves everyone she meets — total goofball.",                            url: "/dogs" },
+  { id: "fb-2", name: "Mocha",   breed: "Doberman",            age: "3 years",  emoji: "🦮",   size: "large",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Loyal, calm, brilliant. Mocha passed obedience school with flying colors.",     url: "/dogs" },
+  { id: "fb-3", name: "Zara",    breed: "Greyhound",           age: "4 years",  emoji: "🦮",   size: "large",  energy: "low",      shelter: "Chicago Animal Care & Control", bio: "Retired racer who now prefers naps over sprints.",                              url: "/dogs" },
+  { id: "fb-4", name: "Pepper",  breed: "Poodle",              age: "1 year",   emoji: "🐩",   size: "small",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Smart and sassy — learns new tricks in minutes!",                              url: "/dogs" },
+  { id: "fb-5", name: "Rex",     breed: "German Shepherd Dog", age: "5 years",  emoji: "🐕‍🦺",  size: "large",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Rex is a big softie underneath all that fur. Great with kids.",               url: "/dogs" },
+  { id: "fb-6", name: "Luna",    breed: "American Pit Bull Terrier", age: "2 years", emoji: "🐕", size: "medium", energy: "high",  shelter: "Chicago Animal Care & Control", bio: "Pure love. Will sit on your lap and wonder why belly rubs ever stop.",         url: "/dogs" },
+  { id: "fb-7", name: "Coco",    breed: "Dachshund",           age: "3 years",  emoji: "🌭",   size: "small",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Short legs, big attitude. A dachshund through and through.",                   url: "/dogs" },
+  { id: "fb-8", name: "Duke",    breed: "Golden Retriever",    age: "4 years",  emoji: "🦴",   size: "large",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "The quintessential good boy. Loves the park, loves kids, loves everyone.",      url: "/dogs" },
 ];
 
 // Shape + color profile per "look" — each breed archetype gets its own
@@ -188,7 +194,8 @@ async function fetchDogs() {
     const res = await fetch("/api/park-dogs");
     if (!res.ok) throw new Error("fetch failed");
     const json = await res.json();
-    return (json.dogs ?? []).map((d) => ({ ...d, id: d.id || crypto.randomUUID() }));
+    const live = (json.dogs ?? []).map((d) => ({ ...d, id: d.id || crypto.randomUUID() }));
+    return live.length > 0 ? live : FALLBACK_DOGS;
   } catch {
     return FALLBACK_DOGS;
   }

@@ -125,7 +125,13 @@ def scrape_all(debug: bool = False) -> list[dict]:
     seen: set[str] = set()
 
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True)
+        # Use the pre-installed Chromium in cloud environments
+        chrome_path = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+        import shutil
+        launch_args = {"headless": True}
+        if shutil.which(chrome_path) or __import__("os").path.exists(chrome_path):
+            launch_args["executable_path"] = chrome_path
+        browser = pw.chromium.launch(**launch_args)
         page = browser.new_page()
 
         for page_num in range(_MAX_PAGES):

@@ -58,30 +58,46 @@ _ID_RE = re.compile(r"\(?(A\d{5,7})\)?")
 
 
 def _parse_html(html: str) -> list[dict]:
-    """Parse rendered HTML into animal records."""
+    """Parse rendered HTML into animal records.
+
+    The site renders each field as three separate lines:
+        'Name'
+        ':'
+        'ESTELLA (A297709)'
+    so we scan for label / ':' / value triples.
+    """
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, "html.parser")
     animals: list[dict] = []
     lines = [ln.strip() for ln in soup.get_text("\n").split("\n") if ln.strip()]
+
+    label_map = {label: key for label, key in _FIELD_LABELS.items()}
     current: dict | None = None
-    for line in lines:
-        for label, key in _FIELD_LABELS.items():
-            if line.startswith(label + ":"):
-                value = line[len(label) + 1:].strip()
-                if key == "name":
-                    if current:
-                        animals.append(current)
-                    current = {"name": value}
-                    m = _ID_RE.search(value)
-                    if m:
-                        current["animal_id"] = m.group(1)
-                        display = _ID_RE.sub("", value).strip()
-                        current["display_name"] = display or None
-                elif current is not None:
-                    current[key] = value
-                break
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line in label_map and i + 2 < len(lines) and lines[i + 1] == ":":
+            key = label_map[line]
+            value = lines[i + 2].strip()
+            if key == "name":
+                if current:
+                    animals.append(current)
+                current = {"name": value}
+                m = _ID_RE.search(value)
+                if m:
+                    current["animal_id"] = m.group(1)
+                    display = _ID_RE.sub("", value).strip()
+                    current["display_name"] = display or None
+            elif current is not None:
+                current[key] = value
+            i += 3
+            continue
+        i += 1
+
     if current:
         animals.append(current)
+
     photos = [
         img["src"] for img in soup.find_all("img")
         if "/image/" in img.get("src", "")
@@ -348,8 +364,7 @@ def main() -> None:
     print(f"Scraped {len(raw)} animals.\n")
 
     if not raw:
-        print("Nothing scraped — check that Playwright is installed:")
-        print("  pip install playwright && playwright install chromium")
+        print("Nothing scraped. Try running with --debug to inspect what the page returns.")
         return
 
     if not args.dry_run:

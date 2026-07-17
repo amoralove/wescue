@@ -91,14 +91,14 @@ def _parse_html(html: str) -> list[dict]:
     return animals
 
 
-def scrape_all() -> list[dict]:
+def scrape_all(debug: bool = False) -> list[dict]:
     """Scrape all pages using Playwright for JS rendering."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
         print("ERROR: Playwright not installed.")
         print("  pip install playwright")
-        print("  playwright install chromium")
+        print("  python -m playwright install chromium")
         sys.exit(1)
 
     all_animals: list[dict] = []
@@ -113,10 +113,24 @@ def scrape_all() -> list[dict]:
             url = f"{_BASE}?index={index}"
             print(f"  Fetching page {page_num + 1} (index={index})...")
 
-            page.goto(url, wait_until="networkidle", timeout=30000)
-            # Give JS a moment to finish rendering animal cards
-            page.wait_for_timeout(1500)
+            page.goto(url, wait_until="networkidle", timeout=60000)
+            page.wait_for_timeout(3000)
             html = page.content()
+
+            if debug and page_num == 0:
+                debug_path = Path("cacc_debug_page.html")
+                debug_path.write_text(html, encoding="utf-8")
+                print(f"\n  [DEBUG] Raw HTML saved to {debug_path.resolve()}")
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html, "html.parser")
+                text = soup.get_text("\n")
+                lines = [l.strip() for l in text.split("\n") if l.strip()]
+                print(f"  [DEBUG] Page text line count: {len(lines)}")
+                print(f"  [DEBUG] First 20 non-empty lines:")
+                for ln in lines[:20]:
+                    print(f"           {ln!r}")
+                print()
+
             animals = _parse_html(html)
 
             fresh = []
@@ -131,7 +145,7 @@ def scrape_all() -> list[dict]:
                 break
 
             all_animals.extend(fresh)
-            time.sleep(1)  # polite delay between page turns
+            time.sleep(1)
 
         browser.close()
 
@@ -317,6 +331,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Import CACC dogs into Wescues Supabase")
     ap.add_argument("--dry-run", action="store_true", help="Preview without writing to DB")
     ap.add_argument("--limit", type=int, help="Cap the number of dogs imported")
+    ap.add_argument("--debug", action="store_true", help="Dump raw HTML + text of first page for inspection")
     args = ap.parse_args()
 
     if not args.dry_run and (not SUPABASE_URL or not SUPABASE_KEY):
@@ -329,7 +344,7 @@ def main() -> None:
         sys.exit(1)
 
     print("── Step 1: Scraping 24PetConnect (JS rendering via Playwright) ─")
-    raw = scrape_all()
+    raw = scrape_all(debug=args.debug)
     print(f"Scraped {len(raw)} animals.\n")
 
     if not raw:

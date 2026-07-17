@@ -68,7 +68,7 @@ export function DogCard({
               <img
                 src={photoUrl}
                 alt={dog.name}
-                className="w-full h-full object-cover object-top"
+                className="w-full h-full object-contain"
               />
             ) : (
               <span className="text-[5rem]">&#x1f436;</span>

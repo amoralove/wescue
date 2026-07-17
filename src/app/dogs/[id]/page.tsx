@@ -72,13 +72,13 @@ export default async function DogProfilePage({
           <div
             className="card-sketchy overflow-hidden mb-8 wobbly-1"
           >
-            <div className="h-[300px] md:h-[400px] bg-forest-pale flex items-center justify-center border-b-3 border-pencil overflow-hidden">
+            <div className="h-[360px] md:h-[480px] bg-[#f5f0e8] flex items-center justify-center border-b-3 border-pencil overflow-hidden">
               {typedDog.photos?.[0] ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={typedDog.photos[0]}
                   alt={typedDog.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div className="text-center px-6">

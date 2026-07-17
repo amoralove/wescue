@@ -1,14 +1,12 @@
 """
 Import Chicago Animal Care and Control dogs into Wescues via Supabase.
 
-Scrapes 24PetConnect (https://24petconnect.com/chgoall), maps each dog to the
-Wescues database schema, and upserts records so re-runs are safe.
+Uses Playwright to render the JavaScript-heavy 24PetConnect listing pages,
+then maps each dog to the Wescues database schema and upserts into Supabase.
 
 Requirements:
-    pip install requests beautifulsoup4
-
-    Optional (to auto-load .env.local):
-    pip install python-dotenv
+    pip install playwright requests python-dotenv
+    playwright install chromium
 
 Setup — export these before running, or let python-dotenv load them from
 your project's .env.local:
@@ -31,7 +29,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
-from bs4 import BeautifulSoup
 
 # ── Load .env.local automatically if python-dotenv is installed ───────────────
 try:
@@ -47,11 +44,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 # ── Scraper ───────────────────────────────────────────────────────────────────
 _BASE = "https://24petconnect.com/chgoall"
 _PAGE_SIZE = 30
-_DELAY = 2.0
 _MAX_PAGES = 50
-_HEADERS = {
-    "User-Agent": "WescueBot/0.1 (shelter adoption platform; contact: hello@wescues.com)"
-}
 _FIELD_LABELS = {
     "Name": "name",
     "Gender": "gender",
@@ -64,13 +57,9 @@ _FIELD_LABELS = {
 _ID_RE = re.compile(r"\(?(A\d{5,7})\)?")
 
 
-def _fetch(index: int) -> str:
-    r = requests.get(_BASE, params={"index": index}, headers=_HEADERS, timeout=30)
-    r.raise_for_status()
-    return r.text
-
-
-def _parse_page(html: str) -> list[dict]:
+def _parse_html(html: str) -> list[dict]:
+    """Parse rendered HTML into animal records."""
+    from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, "html.parser")
     animals: list[dict] = []
     lines = [ln.strip() for ln in soup.get_text("\n").split("\n") if ln.strip()]
@@ -103,23 +92,49 @@ def _parse_page(html: str) -> list[dict]:
 
 
 def scrape_all() -> list[dict]:
+    """Scrape all pages using Playwright for JS rendering."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("ERROR: Playwright not installed.")
+        print("  pip install playwright")
+        print("  playwright install chromium")
+        sys.exit(1)
+
     all_animals: list[dict] = []
     seen: set[str] = set()
-    for page in range(_MAX_PAGES):
-        index = page * _PAGE_SIZE
-        print(f"  Fetching page {page + 1} (index={index})...")
-        animals = _parse_page(_fetch(index))
-        fresh = []
-        for a in animals:
-            key = a.get("animal_id") or a.get("name")
-            if key and key not in seen:
-                seen.add(key)
-                fresh.append(a)
-        if not fresh:
-            print("  No new animals — end of listings.")
-            break
-        all_animals.extend(fresh)
-        time.sleep(_DELAY)
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        for page_num in range(_MAX_PAGES):
+            index = page_num * _PAGE_SIZE
+            url = f"{_BASE}?index={index}"
+            print(f"  Fetching page {page_num + 1} (index={index})...")
+
+            page.goto(url, wait_until="networkidle", timeout=30000)
+            # Give JS a moment to finish rendering animal cards
+            page.wait_for_timeout(1500)
+            html = page.content()
+            animals = _parse_html(html)
+
+            fresh = []
+            for a in animals:
+                key = a.get("animal_id") or a.get("name")
+                if key and key not in seen:
+                    seen.add(key)
+                    fresh.append(a)
+
+            if not fresh:
+                print("  No new animals — end of listings.")
+                break
+
+            all_animals.extend(fresh)
+            time.sleep(1)  # polite delay between page turns
+
+        browser.close()
+
     return all_animals
 
 
@@ -184,7 +199,6 @@ def _headers(extra: dict | None = None) -> dict:
 
 
 def get_or_create_shelter() -> str:
-    """Return the UUID of the CACC shelter row, creating it if absent."""
     url = f"{SUPABASE_URL}/rest/v1/shelters"
     r = requests.get(
         url,
@@ -222,11 +236,14 @@ def get_or_create_shelter() -> str:
 
 
 def get_existing_ids(shelter_id: str) -> set[str]:
-    """Fetch external_ids already in the DB for this shelter."""
     url = f"{SUPABASE_URL}/rest/v1/dogs"
     r = requests.get(
         url,
-        params={"shelter_id": f"eq.{shelter_id}", "source": "eq.24petconnect", "select": "external_id"},
+        params={
+            "shelter_id": f"eq.{shelter_id}",
+            "source": "eq.24petconnect",
+            "select": "external_id",
+        },
         headers=_headers(),
         timeout=15,
     )
@@ -307,13 +324,18 @@ def main() -> None:
         print("Export these from your .env.local file:")
         print("  export NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co")
         print("  export SUPABASE_SERVICE_ROLE_KEY=eyJ...")
-        print("\nOr install python-dotenv and they'll load automatically:")
+        print("\nOr install python-dotenv and they load automatically:")
         print("  pip install python-dotenv")
         sys.exit(1)
 
-    print("── Step 1: Scraping 24PetConnect ────────────────────────────")
+    print("── Step 1: Scraping 24PetConnect (JS rendering via Playwright) ─")
     raw = scrape_all()
     print(f"Scraped {len(raw)} animals.\n")
+
+    if not raw:
+        print("Nothing scraped — check that Playwright is installed:")
+        print("  pip install playwright && playwright install chromium")
+        return
 
     if not args.dry_run:
         print("── Step 2: Setting up CACC shelter record ───────────────────")
@@ -342,9 +364,9 @@ def main() -> None:
         if args.limit and len(mapped) >= args.limit:
             break
 
-    print(f"New dogs to import : {len(mapped)}")
-    print(f"Skipped (not a dog): {skipped_type}")
-    print(f"Skipped (already in DB): {skipped_exists}\n")
+    print(f"New dogs to import   : {len(mapped)}")
+    print(f"Skipped (not a dog)  : {skipped_type}")
+    print(f"Skipped (already DB) : {skipped_exists}\n")
 
     if args.dry_run:
         print("── Dry-run sample (first 3 records) ─────────────────────────")
@@ -364,7 +386,10 @@ def main() -> None:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     snap = f"cacc_snapshot_{stamp}.json"
     with open(snap, "w", encoding="utf-8") as f:
-        json.dump({"scraped_at": stamp, "count": len(raw), "animals": raw}, f, indent=2, ensure_ascii=False)
+        json.dump(
+            {"scraped_at": stamp, "count": len(raw), "animals": raw},
+            f, indent=2, ensure_ascii=False,
+        )
 
     print(f"\nDone! {total} new dogs added to Wescues.")
     print(f"Raw snapshot saved → {snap}")

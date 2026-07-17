@@ -98,10 +98,14 @@ def _parse_html(html: str) -> list[dict]:
     if current:
         animals.append(current)
 
-    photos = [
-        img["src"] for img in soup.find_all("img")
-        if "/image/" in img.get("src", "")
-    ]
+    photos = []
+    for img in soup.find_all("img"):
+        src = img.get("src", "")
+        if "/image/" in src:
+            if src.startswith("http"):
+                photos.append(src)
+            else:
+                photos.append("https://24petconnect.com" + src)
     for animal, url in zip(animals, photos):
         animal["photo_url"] = url
     return animals

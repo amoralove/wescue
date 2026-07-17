@@ -61,14 +61,14 @@ export function DogCard({
 
         <Link href={`/dogs/${dog.id}`} className="block cursor-pointer">
           <div
-            className="h-[180px] flex items-center justify-center relative border-b-3 border-pencil"
+            className="h-[240px] flex items-center justify-center relative border-b-3 border-pencil"
             style={{ backgroundColor: bgColor }}
           >
             {photoUrl ? (
               <img
                 src={photoUrl}
                 alt={dog.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             ) : (
               <span className="text-[5rem]">&#x1f436;</span>

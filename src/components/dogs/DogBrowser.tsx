@@ -288,12 +288,12 @@ export function DogBrowser({ dogs, userId, favoritedIds: initialFavIds }: Props)
           {/* Photo or 3D viewer */}
           <div className="relative">
             {dog.photos?.[0] ? (
-              <div className="w-full overflow-hidden" style={{ height: "300px" }}>
+              <div className="w-full overflow-hidden" style={{ height: "360px" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={dog.photos[0]}
                   alt={dog.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                 />
               </div>
             ) : (

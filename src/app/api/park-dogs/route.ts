@@ -21,15 +21,19 @@ function ageLabel(years: number | null, months: number | null): string {
 export async function GET() {
   try {
     const supabase = await createClient();
+    // Fetch a pool of 100 then randomly pick 8 so each visit feels fresh
     const { data, error } = await supabase
       .from("dogs")
       .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, shelter:shelters(name, city, state)")
       .eq("status", "available")
-      .limit(50);
+      .limit(100);
 
     if (error) throw error;
 
-    const dogs = (data ?? []).map((dog) => ({
+    const pool = data ?? [];
+    const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 8);
+
+    const dogs = shuffled.map((dog) => ({
       id: dog.id,
       name: dog.name,
       breed: dog.breed_primary ?? "Mixed breed",

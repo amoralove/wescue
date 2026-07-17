@@ -33,6 +33,8 @@ export interface Dog {
   photos: string[];
   source: "manual" | "rescuegroups" | "shelterluv" | "24petconnect";
   external_id: string | null;
+  coat_primary: string | null;
+  coat_secondary: string | null;
   created_at: string;
   updated_at: string;
   shelter?: Shelter;

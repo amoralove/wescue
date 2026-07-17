@@ -466,10 +466,19 @@ function buildDogMesh(profile) {
 // Builds a dog from a preloaded .glb template instead of procedural boxes.
 // Looks for optional named nodes to drive the same walk animation as the
 // procedural dogs; anything not found is simply skipped when animating.
-function buildDogMeshFromTemplate(template) {
+function buildDogMeshFromTemplate(template, coatHex) {
   const root = template.clone(true);
+  const coatColor = coatHex ? new THREE.Color(coatHex) : null;
   root.traverse((obj) => {
-    if (obj.isMesh) obj.castShadow = true;
+    if (!obj.isMesh) return;
+    obj.castShadow = true;
+    // Tint the main body material toward the dog's real coat color.
+    // Skip tiny accent meshes (nose, eyes) by name if present.
+    const skip = ['nose', 'eye', 'collar'].includes((obj.name || '').toLowerCase());
+    if (coatColor && !skip && obj.material) {
+      obj.material = obj.material.clone();
+      obj.material.color.lerp(coatColor, 0.65);
+    }
   });
   const head = root.getObjectByName("head") || null;
   const tailPivot = root.getObjectByName("tail") || null;
@@ -505,9 +514,19 @@ function randomTarget() {
 }
 
 function spawnEntity(dog, { atGate } = {}) {
-  const profile = LOOK_PROFILES[dog.emoji] ?? LOOK_PROFILES["🐕"];
+  // Clone profile so we can override coat without mutating the shared template
+  const profile = { ...(LOOK_PROFILES[dog.emoji] ?? LOOK_PROFILES["🐕"]) };
+
+  // Apply AI-extracted coat color if available
+  if (dog.coatPrimary) {
+    profile.coat = parseInt(dog.coatPrimary.replace('#', ''), 16);
+  }
+
   const template = modelTemplates[dog.emoji];
-  const model = template ? buildDogMeshFromTemplate(template) : buildDogMesh(profile);
+  // For GLB models, tint all body meshes toward the real coat color
+  const model = template
+    ? buildDogMeshFromTemplate(template, dog.coatPrimary || null)
+    : buildDogMesh(profile);
   model.root.userData.dogId = dog.id;
   dogsGroup.add(model.root);
 

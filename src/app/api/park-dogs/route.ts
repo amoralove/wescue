@@ -24,7 +24,7 @@ export async function GET() {
     // Fetch a pool of 100 then randomly pick 8 so each visit feels fresh
     const { data, error } = await supabase
       .from("dogs")
-      .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, shelter:shelters(name, city, state)")
+      .select("id, name, breed_primary, age_years, age_months, size, energy_level, good_with_kids, good_with_dogs, good_with_cats, house_trained, adoption_fee_cents, personality, photos, coat_primary, coat_secondary, shelter:shelters(name, city, state)")
       .eq("status", "available")
       .limit(100);
 
@@ -52,6 +52,8 @@ export async function GET() {
       goodWithCats: dog.good_with_cats ?? null,
       houseTrained: dog.house_trained ?? null,
       feeCents: dog.adoption_fee_cents ?? null,
+      coatPrimary: (dog as Record<string, unknown>).coat_primary as string | null ?? null,
+      coatSecondary: (dog as Record<string, unknown>).coat_secondary as string | null ?? null,
     }));
 
     return NextResponse.json({ dogs }, {

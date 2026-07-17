@@ -31,7 +31,7 @@ export interface Dog {
   adoption_fee_cents: number | null;
   status: DogStatus;
   photos: string[];
-  source: "manual" | "rescuegroups" | "shelterluv";
+  source: "manual" | "rescuegroups" | "shelterluv" | "24petconnect";
   external_id: string | null;
   created_at: string;
   updated_at: string;

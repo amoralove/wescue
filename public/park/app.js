@@ -85,9 +85,40 @@ function breedSlug(breed) {
     .replace(/^-+|-+$/g, '');
 }
 
+// Maps computed breed slugs that lack a dedicated GLB to one that exists.
+const BREED_ALIASES = {
+  "german-shepherd-dog":              "german-shepherd",
+  "alsatian":                         "german-shepherd",
+  "doberman-pinscher":                "doberman",
+  "american-pit-bull-terrier":        "terrier",
+  "american-staffordshire-terrier":   "terrier",
+  "staffordshire-bull-terrier":       "terrier",
+  "yorkshire-terrier":                "terrier",
+  "boston-terrier":                   "terrier",
+  "bull-terrier":                     "terrier",
+  "fox-terrier":                      "terrier",
+  "jack-russell-terrier":             "terrier",
+  "rat-terrier":                      "terrier",
+  "russell-terrier":                  "terrier",
+  "cairn-terrier":                    "terrier",
+  "scottish-terrier":                 "terrier",
+  "wire-fox-terrier":                 "terrier",
+  "italian-greyhound":                "greyhound",
+  "whippet":                          "greyhound",
+  "miniature-poodle":                 "poodle",
+  "toy-poodle":                       "poodle",
+  "standard-poodle":                  "poodle",
+};
+
+function resolveBreedSlug(breed) {
+  const slug = breedSlug(breed);
+  if (!slug) return null;
+  return BREED_ALIASES[slug] ?? slug;
+}
+
 function loadBreedModels(dogList) {
   const slugs = [...new Set(
-    dogList.map(d => breedSlug(d.breed)).filter(Boolean)
+    dogList.map(d => resolveBreedSlug(d.breed)).filter(Boolean)
   )];
   return Promise.all(slugs.map(slug =>
     new Promise(resolve => {
@@ -567,7 +598,7 @@ function spawnEntity(dog, { atGate } = {}) {
   }
 
   // Priority: breed GLB → emoji GLB → procedural model
-  const slug = breedSlug(dog.breed);
+  const slug = resolveBreedSlug(dog.breed);
   const template = (slug && modelsByBreed[slug]) || modelTemplates[dog.emoji] || null;
   const model = template
     ? buildDogMeshFromTemplate(template, dog.coatPrimary || null)

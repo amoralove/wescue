@@ -62,6 +62,50 @@ const MODEL_BASE_URL = "models/";
 const gltfLoader = new GLTFLoader();
 const modelTemplates = {}; // emoji -> THREE.Group template, or null if unavailable
 
+// ── Breed-specific models (auto-discovered at runtime) ────────────────────────
+// Drop a GLB named after the breed slug into public/park/models/ and it
+// auto-applies to every dog of that breed — no code changes needed.
+//
+//   Breed name                        → filename
+//   "American Pit Bull Terrier"       → american-pit-bull-terrier.glb
+//   "American Pit Bull Terrier mix"   → american-pit-bull-terrier.glb
+//   "Chihuahua"                       → chihuahua.glb
+//   "German Shepherd Dog"             → german-shepherd-dog.glb
+//
+// Missing files silently fall back to the emoji model or the procedural build.
+
+const modelsByBreed = {}; // slug → THREE.Group | null
+
+function breedSlug(breed) {
+  if (!breed) return null;
+  return breed
+    .toLowerCase()
+    .replace(/\b(mix|mixed|cross|crossbreed|breed)\b/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function loadBreedModels(dogList) {
+  const slugs = [...new Set(
+    dogList.map(d => breedSlug(d.breed)).filter(Boolean)
+  )];
+  return Promise.all(slugs.map(slug =>
+    new Promise(resolve => {
+      if (slug in modelsByBreed) { resolve(); return; }
+      gltfLoader.load(
+        `${MODEL_BASE_URL}${slug}.glb`,
+        gltf => {
+          modelsByBreed[slug] = gltf.scene;
+          console.log(`[Park] Loaded breed model: ${slug}.glb`);
+          resolve();
+        },
+        undefined,
+        () => { modelsByBreed[slug] = null; resolve(); } // 404 = use fallback
+      );
+    })
+  ));
+}
+
 function loadModelTemplate(emoji, file) {
   return new Promise((resolve) => {
     gltfLoader.load(
@@ -522,8 +566,9 @@ function spawnEntity(dog, { atGate } = {}) {
     profile.coat = parseInt(dog.coatPrimary.replace('#', ''), 16);
   }
 
-  const template = modelTemplates[dog.emoji];
-  // For GLB models, tint all body meshes toward the real coat color
+  // Priority: breed GLB → emoji GLB → procedural model
+  const slug = breedSlug(dog.breed);
+  const template = (slug && modelsByBreed[slug]) || modelTemplates[dog.emoji] || null;
   const model = template
     ? buildDogMeshFromTemplate(template, dog.coatPrimary || null)
     : buildDogMesh(profile);
@@ -1033,5 +1078,6 @@ function animate(now) {
 // --- Init ---
 await preloadModels();
 dogs = await fetchDogs();
+await loadBreedModels(dogs); // try to load a breed GLB for every dog in the park
 renderAllDogs();
 requestAnimationFrame(animate);

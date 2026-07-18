@@ -4,14 +4,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 // Dogs are loaded from the Wescue API (/api/park-dogs) at startup.
 // Fallback seeds are shown while loading, if the fetch fails, or if the DB is empty.
 const FALLBACK_DOGS = [
-  { id: "fb-1", name: "Biscuit",  breed: "Terrier",             age: "2 years",  emoji: "🐕",   size: "medium", energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Biscuit loves everyone she meets — total goofball.",                            url: "/dogs" },
-  { id: "fb-2", name: "Mocha",   breed: "Doberman",            age: "3 years",  emoji: "🦮",   size: "large",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Loyal, calm, brilliant. Mocha passed obedience school with flying colors.",     url: "/dogs" },
-  { id: "fb-3", name: "Zara",    breed: "Greyhound",           age: "4 years",  emoji: "🦮",   size: "large",  energy: "low",      shelter: "Chicago Animal Care & Control", bio: "Retired racer who now prefers naps over sprints.",                              url: "/dogs" },
-  { id: "fb-4", name: "Pepper",  breed: "Poodle",              age: "1 year",   emoji: "🐩",   size: "small",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Smart and sassy — learns new tricks in minutes!",                              url: "/dogs" },
-  { id: "fb-5", name: "Rex",     breed: "German Shepherd Dog", age: "5 years",  emoji: "🐕‍🦺",  size: "large",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Rex is a big softie underneath all that fur. Great with kids.",               url: "/dogs" },
-  { id: "fb-6", name: "Luna",    breed: "American Pit Bull Terrier", age: "2 years", emoji: "🐕", size: "medium", energy: "high",  shelter: "Chicago Animal Care & Control", bio: "Pure love. Will sit on your lap and wonder why belly rubs ever stop.",         url: "/dogs" },
-  { id: "fb-7", name: "Coco",    breed: "Dachshund",           age: "3 years",  emoji: "🌭",   size: "small",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Short legs, big attitude. A dachshund through and through.",                   url: "/dogs" },
-  { id: "fb-8", name: "Duke",    breed: "Golden Retriever",    age: "4 years",  emoji: "🦴",   size: "large",  energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "The quintessential good boy. Loves the park, loves kids, loves everyone.",      url: "/dogs" },
+  { id: "fb-1", name: "Hana",   breed: "Shiba Inu", age: "2 years",  emoji: "🐕", size: "medium", energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Hana is spirited, loyal, and just a little dramatic — classic Shiba.",    url: "/dogs" },
+  { id: "fb-2", name: "Mochi",  breed: "Shiba Inu", age: "1 year",   emoji: "🐕", size: "small",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Mochi zooms at full speed and stops for absolutely nothing.",             url: "/dogs" },
+  { id: "fb-3", name: "Kuma",   breed: "Shiba Inu", age: "3 years",  emoji: "🐕", size: "medium", energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Kuma is the dignified type — sits in sunbeams and judges squirrels.",     url: "/dogs" },
+  { id: "fb-4", name: "Yuki",   breed: "Shiba Inu", age: "4 years",  emoji: "🐕", size: "medium", energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Yuki is calm, clever, and very particular about her personal space.",      url: "/dogs" },
+  { id: "fb-5", name: "Riku",   breed: "Shiba Inu", age: "2 years",  emoji: "🐕", size: "medium", energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Riku never runs out of energy. Or opinions.",                             url: "/dogs" },
+  { id: "fb-6", name: "Sora",   breed: "Shiba Inu", age: "5 years",  emoji: "🐕", size: "medium", energy: "low",      shelter: "Chicago Animal Care & Control", bio: "Sora is a mellow elder statesman who still outruns the puppies.",         url: "/dogs" },
+  { id: "fb-7", name: "Dango",  breed: "Shiba Inu", age: "1 year",   emoji: "🐕", size: "small",  energy: "high",     shelter: "Chicago Animal Care & Control", bio: "Dango thinks every walk is a parade in his honor.",                       url: "/dogs" },
+  { id: "fb-8", name: "Nori",   breed: "Shiba Inu", age: "3 years",  emoji: "🐕", size: "medium", energy: "moderate", shelter: "Chicago Animal Care & Control", bio: "Nori is fiercely independent but secretly loves a good ear scratch.",      url: "/dogs" },
 ];
 
 // Shape + color profile per "look" — each breed archetype gets its own
@@ -19,36 +19,33 @@ const FALLBACK_DOGS = [
 // the shared template, so different breeds are visually distinct while
 // still built from the same parts and sharing the same accent colors.
 const LOOK_PROFILES = {
-  "🐕": { // Medium dog / terrier — the baseline proportions
+  "🐕": { // Medium dog — baseline proportions (procedural)
     coat: 0xc9975b, legMul: 1, bodyLenMul: 1, bodyWidMul: 1, bodyHeightMul: 1,
-    headMul: 1, earStyle: "perked", furry: false, sizeMul: 1, modelFile: "terrier.glb",
+    headMul: 1, earStyle: "perked", furry: false, sizeMul: 1,
   },
-  "🐶": { // Puppy face / toy breed — big head, short legs, small round ears
+  "🐶": { // Puppy / toy breed — big head, short legs
     coat: 0xe0b467, legMul: 0.72, bodyLenMul: 0.82, bodyWidMul: 0.85, bodyHeightMul: 0.85,
-    headMul: 1.28, earStyle: "small-round", furry: false, sizeMul: 0.85, modelFile: "puppy.glb",
+    headMul: 1.28, earStyle: "small-round", furry: false, sizeMul: 0.85,
   },
-  "🐩": { // Curly-coated / poodle — fluffy poofs, longer legs
+  "🐩": { // Poodle — longer legs
     coat: 0xf2ede1, legMul: 1.15, bodyLenMul: 0.95, bodyWidMul: 0.9, bodyHeightMul: 0.95,
-    headMul: 1, earStyle: "floppy-small", furry: true, sizeMul: 1, modelFile: "poodle.glb",
+    headMul: 1, earStyle: "floppy-small", furry: true, sizeMul: 1,
   },
-  "🦮": { // Big & steady / labrador-like — floppy ears, sturdy build
+  "🦮": { // Labrador-like — floppy ears, sturdy build
     coat: 0x4a3527, legMul: 1.1, bodyLenMul: 1.15, bodyWidMul: 1.15, bodyHeightMul: 1.1,
-    headMul: 1.05, earStyle: "floppy-large", furry: false, sizeMul: 1.1, modelFile: "labrador.glb",
+    headMul: 1.05, earStyle: "floppy-large", furry: false, sizeMul: 1.1,
   },
-  "🐕‍🦺": { // Working breed / shepherd-like — upright ears, lean and long
+  "🐕‍🦺": { // Shepherd-like — upright ears, lean and long
     coat: 0x2b2b2b, legMul: 1.2, bodyLenMul: 1.1, bodyWidMul: 0.92, bodyHeightMul: 0.95,
-    headMul: 0.95, earStyle: "perked-large", furry: false, sizeMul: 1.05, modelFile: "shepherd.glb",
+    headMul: 0.95, earStyle: "perked-large", furry: false, sizeMul: 1.05,
   },
-  "🌭": { // Dachshund, hot-dog styled — long low body, short legs (procedural
-          // fallback only; the real look comes from models/dachshund.glb,
-          // a stretched/recolored/mustard-striped derivation of base.vox)
+  "🌭": { // Dachshund — long low body, short legs
     coat: 0xdeb06c, legMul: 0.55, bodyLenMul: 1.5, bodyWidMul: 0.85, bodyHeightMul: 0.8,
-    headMul: 0.9, earStyle: "floppy-small", furry: false, sizeMul: 1, modelFile: "dachshund.glb",
+    headMul: 0.9, earStyle: "floppy-small", furry: false, sizeMul: 1,
   },
-  "🦴": { // Golden Retriever — procedural fallback only; the real look
-         // comes from models/golden.glb, a recolor of base.vox
+  "🦴": { // Golden Retriever
     coat: 0xe6b254, legMul: 1.1, bodyLenMul: 1.1, bodyWidMul: 1.1, bodyHeightMul: 1.05,
-    headMul: 1, earStyle: "floppy-large", furry: false, sizeMul: 1.1, modelFile: "golden.glb",
+    headMul: 1, earStyle: "floppy-large", furry: false, sizeMul: 1.1,
   },
 };
 
@@ -91,29 +88,13 @@ function breedSlug(breed) {
     .replace(/^-+|-+$/g, '');
 }
 
-// Maps computed breed slugs that lack a dedicated GLB to one that exists.
+// Maps computed breed slugs to the GLB filename that exists in models/.
+// Only shiba-inu.glb is present right now — everything else falls back
+// to the procedural mesh.
 const BREED_ALIASES = {
-  "german-shepherd-dog":              "german-shepherd",
-  "alsatian":                         "german-shepherd",
-  "doberman-pinscher":                "doberman",
-  "american-pit-bull-terrier":        "terrier",
-  "american-staffordshire-terrier":   "terrier",
-  "staffordshire-bull-terrier":       "terrier",
-  "yorkshire-terrier":                "terrier",
-  "boston-terrier":                   "terrier",
-  "bull-terrier":                     "terrier",
-  "fox-terrier":                      "terrier",
-  "jack-russell-terrier":             "terrier",
-  "rat-terrier":                      "terrier",
-  "russell-terrier":                  "terrier",
-  "cairn-terrier":                    "terrier",
-  "scottish-terrier":                 "terrier",
-  "wire-fox-terrier":                 "terrier",
-  "italian-greyhound":                "greyhound",
-  "whippet":                          "greyhound",
-  "miniature-poodle":                 "poodle",
-  "toy-poodle":                       "poodle",
-  "standard-poodle":                  "poodle",
+  "shiba":                    "shiba-inu",
+  "shiba-inu":                "shiba-inu",
+  "shiba-ken":                "shiba-inu",
 };
 
 function resolveBreedSlug(breed) {
@@ -161,9 +142,8 @@ function loadModelTemplate(emoji, file) {
 }
 
 function preloadModels() {
-  return Promise.all(
-    Object.entries(LOOK_PROFILES).map(([emoji, profile]) => loadModelTemplate(emoji, profile.modelFile))
-  );
+  // No per-emoji GLBs any more — breed models are loaded by loadBreedModels() instead.
+  return Promise.resolve();
 }
 
 const PET_KEY = "wescue-dog-park-pets";
@@ -546,16 +526,27 @@ function buildDogMesh(profile) {
 }
 
 // Builds a dog from a preloaded .glb template instead of procedural boxes.
-// Looks for optional named nodes to drive the same walk animation as the
-// procedural dogs; anything not found is simply skipped when animating.
+// Auto-normalizes scale so the model fits the same height as a procedural dog
+// (~0.85 world units), regardless of the source file's internal units.
 function buildDogMeshFromTemplate(template, coatHex) {
   const root = template.clone(true);
+
+  // Auto-scale: measure the bounding box and rescale to TARGET_HEIGHT.
+  const TARGET_HEIGHT = 0.85;
+  const box = new THREE.Box3().setFromObject(root);
+  const modelHeight = box.max.y - box.min.y;
+  if (modelHeight > 0) {
+    const s = TARGET_HEIGHT / modelHeight;
+    root.scale.setScalar(s);
+    // Re-measure after scaling to sit the model's feet on y=0
+    const box2 = new THREE.Box3().setFromObject(root);
+    root.position.y = -box2.min.y;
+  }
+
   const coatColor = coatHex ? new THREE.Color(coatHex) : null;
   root.traverse((obj) => {
     if (!obj.isMesh) return;
     obj.castShadow = true;
-    // Tint the main body material toward the dog's real coat color.
-    // Skip tiny accent meshes (nose, eyes) by name if present.
     const skip = ['nose', 'eye', 'collar'].includes((obj.name || '').toLowerCase());
     if (coatColor && !skip && obj.material) {
       obj.material = obj.material.clone();
